@@ -1,0 +1,2 @@
+
+-DCATKIN_DEVEL_PREFIX=/home/murillo/monte-carlo-localization/devel -DCMAKE_INSTALL_PREFIX=/home/murillo/monte-carlo-localization/install -G Unix Makefiles
