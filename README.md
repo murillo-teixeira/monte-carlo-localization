@@ -15,9 +15,21 @@ cd bagfiles
 rosbag play -l -r 0.5 2023-05-05-10-05-00.bag
 ```
 
+3. Build dos pacotes
+``` bash 
+cd ~/monte-carlo-localization
+catkin build
+```
+
 3. Rodar o arquivo python
 ``` bash 
 rosrun nome_do_pacote nome_do_arquivo.py
+```
+
+e.g.
+
+``` bash 
+rosrun reading_odometry listener.py
 ```
 
 
