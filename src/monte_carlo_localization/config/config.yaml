@@ -1,1 +1,5 @@
 node_frequency: 50.0
+map_xmin: 450
+map_xmax: 1000
+map_ymin: 800
+map_ymax: 1300
