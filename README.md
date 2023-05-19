@@ -2,42 +2,52 @@
 
 ## Instructions
 
-1. Rodar o roscore
+1. Create a catkin workspace that will contain the code inside the home
 
-``` bash
-roscore
-```
-
-2. Para rodar o rosbag
-
-``` bash
-cd bagfiles
-rosbag play -l -r 0.5 2023-05-05-10-05-00.bag
-```
-
-3. Build dos pacotes
-``` bash 
-cd ~/monte-carlo-localization
+```bash
+cd ~
+mkdir -p catkin_ws/src
+cd catkin_ws
 catkin build
 ```
 
-3. Rodar o arquivo python
-``` bash 
-rosrun nome_do_pacote nome_do_arquivo.py
+2. Clone this repository inside the catkin_ws/src folder
+
+```bash
+cd src
+git clone https://github.com/mhteixeira/monte-carlo-localization.git
 ```
 
-e.g.
+3. Build the package
 
-``` bash 
-rosrun reading_odometry listener.py
+```bash
+cd ~/catkin_ws
+catkin build
 ```
 
+4. Include the following line inside the ~/.bashrc file (using e.g. 'nano ~/.bashrc')
+
+``` bash 
+source $HOME/catkin_ws/devel/setup.bash
+```
+
+and then do:
+
+``` bash 
+source ~/.bashrc
+```
+
+4. Run the launch file
+
+``` bash 
+roslaunch mcl_python load_mcl.launch
+```
 
 ## Tarefas
 
 1. Conseguir o laser para o Pioneer-3DX
 
-2. Criar o mapa do ambiente com o Gmapping ([Mapa com o Pioneer-3DX](http://wiki.ros.org/p2os-purdue/Tutorials/GMapping%20With%20Pioneer-3dx))
+2. Criar o mapa do ambiente com o Gmapping
 
 3. Criar a estrutura geral da implementação
     1. Criar a classe Particle
