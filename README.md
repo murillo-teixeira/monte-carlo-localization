@@ -39,12 +39,20 @@ rosrun reading_odometry listener.py
 
 2. Criar o mapa do ambiente com o Gmapping ([Mapa com o Pioneer-3DX](http://wiki.ros.org/p2os-purdue/Tutorials/GMapping%20With%20Pioneer-3dx))
 
-3. Criar node que publica o mapa para o RViz
+3. Criar a estrutura geral da implementação
+    1. Criar a classe Particle
+    2. Criar a classe ParticleFilter
+        - Lê o mapa (__init__)
+        - Inicializa de forma aleatória as partículas (random)
+            - Escolhe uma pose aleatória (x, y, theta)
+            - Vê se ela está dentro do mapa
+            - Se não estiver dentro do mapa, procuro outro lugar
+        - Atualizar as partículas (Algorithm MCL)
+            - Reescolher de forma aleatória numa primeira implementação
+        - Printa as partículas (usando matplotlib)
 
-4. Criar o node do Monte Carlo: 
-    1. Ler dados da odometria e laser
-    2. Implementar uma classe de Particle Filter
-
-5. Integrar o código com o RViz: Murillo
-
-6. Publicar as partículas para o RViz
+4. Implementar o algoritmo MCL
+    1. Criar e testar o Odometry Motion Model
+    2. Criar e testar o Likelihood Field Algorithm
+    3. Criar e testar o Low Variance Sampler
+    4. Integrar os algoritmos implementados na estrutura pré-definida
