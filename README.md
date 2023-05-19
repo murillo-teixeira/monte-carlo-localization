@@ -35,7 +35,7 @@ rosrun reading_odometry listener.py
 
 ## Tarefas
 
-1. Conseguir o laser para o Pioneer-3DX: Bernardes
+1. Conseguir o laser para o Pioneer-3DX
 
 2. Criar o mapa do ambiente com o Gmapping ([Mapa com o Pioneer-3DX](http://wiki.ros.org/p2os-purdue/Tutorials/GMapping%20With%20Pioneer-3dx))
 
