@@ -24,17 +24,16 @@ class MonteCarloLocalizationNode:
         self.map_ymin       = rospy.get_param("map_ymin", 0)
         self.map_ymax       = rospy.get_param("map_ymax", 0)
         
-        self.map_matrix = self.load_map()
+        self.map_matrix = self.load_map(self.map_file)
         self.plot_map()
 
-        
         self.particles = None
 
         # Initialize the ROS node
         self.initialize_particles(10)
 
-    def load_map(self):
-        with open(self.map_file, 'rb') as f:
+    def load_map(self, map_file):
+        with open(map_file, 'rb') as f:
             lines = f.readlines()
             width, height = np.array(lines[2].split(), dtype=int)
             map_array = np.array([el for el in lines[4]], dtype=np.int16)
