@@ -22,7 +22,7 @@
 
     
     <!-- Play your bag (change the directory of your bag) -->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="-l  -r 0.5 --clock $(arg bag_location)"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="-l  -r 2.0 --clock $(arg bag_location)"/>
 
     <!-- Launch rviz to show the map -->
     <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find mcl_python)/rviz/mapping.rviz" /> -->

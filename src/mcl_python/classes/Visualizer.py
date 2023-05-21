@@ -14,11 +14,11 @@ class Visualizer:
         self.odom_subpot_id = 0
         self.laser_subpot_id = 1
         self.map_subpot_id = 2
-        self.ax[self.odom_subpot_id].axis(xmin=-3,xmax=0)
-        self.ax[self.odom_subpot_id].axis(ymin=-5,ymax=-15)
+        self.ax[self.odom_subpot_id].axis(xmin=-2.9,xmax=0)
+        self.ax[self.odom_subpot_id].axis(ymin=-8.5,ymax=-14.1)
         self.ax[self.map_subpot_id].set_title("Map with particles")
         self.ax[self.odom_subpot_id].set_title("Odometry data")
-        self.ax[self.laser_subpot_id].set_title("Laser data")
+        self.ax[self.laser_subpot_id].set_title("Likelihood field")
 
     def spin(self):
         plt.show(block=True)
@@ -45,8 +45,13 @@ class Visualizer:
 
     def plot_single_particle(self, particle, subplot_id):
         marker, scale = self.gen_arrow_head_marker(particle.theta)
-        marker_size = 5
+        marker_size = 15
         self.ax[subplot_id].scatter([particle.x], [particle.y], c='red', marker=marker, s=(marker_size*scale)**2, alpha=0.3)
+
+    def plot_likelihood_field(self, map):
+        self.ax[self.laser_subpot_id].imshow(map.likelihood_field, cmap='gray')
+        self.ax[self.laser_subpot_id].axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
+        self.ax[self.laser_subpot_id].axis(ymin=map.roi_ymax,ymax=map.roi_ymin)
 
     def gen_arrow_head_marker(self, rot):
         arr = np.array([[.1, .3], [.1, -.3], [1, 0], [.1, .3]])

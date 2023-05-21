@@ -16,7 +16,7 @@ from classes.Visualizer import Visualizer
 
 class MonteCarloLocalizationNode:
 
-    def __init__(self, visualizer):
+    def __init__(self):
         
         rospy.init_node('monte_carlo_localization')
         rospy.loginfo_once('MCL has started')
@@ -33,13 +33,17 @@ class MonteCarloLocalizationNode:
         self.node_frequency = rospy.get_param("node_frequency", 1)
 
         self.particle_filter = ParticleFilter(self.map)
-        self.particle_filter.initialize_particles(1000)
+        self.particle_filter.initialize_particles(300)
 
+        visualizer = Visualizer()
         self.visualizer = visualizer
         self.visualizer.plot_particles(self.map, self.particle_filter)
-        
+        self.visualizer.plot_likelihood_field(self.map)
         self.sub_pose_topic = None
         self.initialize_subscribers()
+
+        self.visualizer.spin()        
+
 
 
     def initialize_subscribers(self):
@@ -55,16 +59,11 @@ class MonteCarloLocalizationNode:
     def callback_read_laser(self, msg):
         pass
 
-
-
 def main():
     
-    visualizer = Visualizer()
-
     # Create an instance of the MonteCarloLocalizationNode class
-    mcl_node = MonteCarloLocalizationNode(visualizer)
+    MonteCarloLocalizationNode()
 
-    visualizer.spin()
 
 if __name__ == '__main__':
     main()
