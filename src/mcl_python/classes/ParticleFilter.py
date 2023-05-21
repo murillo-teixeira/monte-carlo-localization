@@ -18,7 +18,3 @@ class ParticleFilter:
                     is_position_valid = True
                     theta = np.random.uniform(0, 360)
             self.particles.append(Particle(x, y, theta))
-
-    def plot_particles(self):
-        for particle in self.particles:
-            particle.plot_particle()

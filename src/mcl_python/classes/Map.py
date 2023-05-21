@@ -17,8 +17,3 @@ class Map:
             self.map_matrix[self.map_matrix==205] = 0.5
             self.map_matrix[self.map_matrix==0] = 0.0
             self.map_matrix[self.map_matrix==254] = 1.0
-
-    def plot_map(self):
-        plt.imshow(self.map_matrix, cmap='gray')
-        plt.xlim([self.roi_xmin, self.roi_xmax])
-        plt.ylim([self.roi_ymax, self.roi_ymin])

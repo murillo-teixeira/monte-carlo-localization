@@ -1,19 +1,22 @@
 #!/usr/bin/env python3
 
-import rospy
 import matplotlib.pyplot as plt
+import cv2
+import rospy
 import numpy as np
 
 from nav_msgs.msg import Odometry, OccupancyGrid
 from std_msgs.msg import Float64
+from sensor_msgs.msg import LaserScan
 
 from classes.Particle import Particle
 from classes.ParticleFilter import ParticleFilter
 from classes.Map import Map
+from classes.Visualizer import Visualizer
 
 class MonteCarloLocalizationNode:
 
-    def __init__(self):
+    def __init__(self, visualizer):
         
         rospy.init_node('monte_carlo_localization')
         rospy.loginfo_once('MCL has started')
@@ -30,20 +33,38 @@ class MonteCarloLocalizationNode:
         self.node_frequency = rospy.get_param("node_frequency", 1)
 
         self.particle_filter = ParticleFilter(self.map)
-        self.particle_filter.initialize_particles(100)
+        self.particle_filter.initialize_particles(1000)
 
-        self.map.plot_map()
-        self.particle_filter.plot_particles()
-        plt.show()
+        self.visualizer = visualizer
+        self.visualizer.plot_particles(self.map, self.particle_filter)
+        
+        self.sub_pose_topic = None
+        self.initialize_subscribers()
+
+
+    def initialize_subscribers(self):
+        self.sub_pose_topic = rospy.Subscriber('/pose', Odometry, self.callback_read_odometry)
+        self.sub_scan_topic = rospy.Subscriber('/scan', LaserScan, self.callback_read_laser)
+
+    def callback_read_odometry(self, msg):
+        x = msg.pose.pose.position.x
+        y = msg.pose.pose.position.y
+        theta = msg.pose.pose.orientation.w
+        self.visualizer.plot_odometry_reading(x, y, theta)
+
+    def callback_read_laser(self, msg):
+        pass
+
 
 
 def main():
+    
+    visualizer = Visualizer()
 
-    # Create an instance of the DemoNode class
-    mcl_node = MonteCarloLocalizationNode()
+    # Create an instance of the MonteCarloLocalizationNode class
+    mcl_node = MonteCarloLocalizationNode(visualizer)
 
-    # Spin to keep the script for exiting
-    # rospy.spin()
+    visualizer.spin()
 
 if __name__ == '__main__':
     main()
