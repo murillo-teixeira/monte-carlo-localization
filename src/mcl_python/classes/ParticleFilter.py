@@ -6,7 +6,7 @@ class ParticleFilter:
     def __init__(self, map : Map):
         self.particles = None
         self.map = map
-
+        
     def initialize_particles(self, number_of_particles = 50):
         self.particles = []
         for _ in range(number_of_particles):

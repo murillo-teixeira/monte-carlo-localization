@@ -7,7 +7,7 @@ class Map:
         self.roi_xmin, self.roi_xmax, self.roi_ymin, self.roi_ymax = map_roi
         self.map_matrix = None
         self.load_map(map_file)
-        self.create_likelihood_field(5)
+        self.create_likelihood_field(10)
 
     def load_map(self, map_file):
         with open(map_file, 'rb') as f:

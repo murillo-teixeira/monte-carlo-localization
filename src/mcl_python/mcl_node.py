@@ -1,9 +1,6 @@
 #!/usr/bin/env python3
 
-import matplotlib.pyplot as plt
-import cv2
 import rospy
-import numpy as np
 
 from nav_msgs.msg import Odometry, OccupancyGrid
 from std_msgs.msg import Float64
@@ -13,6 +10,8 @@ from classes.Particle import Particle
 from classes.ParticleFilter import ParticleFilter
 from classes.Map import Map
 from classes.Visualizer import Visualizer
+
+from threading import Lock
 
 class MonteCarloLocalizationNode:
 
@@ -42,22 +41,18 @@ class MonteCarloLocalizationNode:
         self.sub_pose_topic = None
         self.initialize_subscribers()
 
-        self.visualizer.spin()        
-
-
+        self.visualizer.spin()      
 
     def initialize_subscribers(self):
         self.sub_pose_topic = rospy.Subscriber('/pose', Odometry, self.callback_read_odometry)
         self.sub_scan_topic = rospy.Subscriber('/scan', LaserScan, self.callback_read_laser)
 
     def callback_read_odometry(self, msg):
-        x = msg.pose.pose.position.x
-        y = msg.pose.pose.position.y
-        theta = msg.pose.pose.orientation.w
-        self.visualizer.plot_odometry_reading(x, y, theta)
+        self.particle_filter.odometry_motion_model(self, msg)
+        pass
 
     def callback_read_laser(self, msg):
-        pass
+        self.visualizer.plot_laser_projection(msg)
 
 def main():
     
