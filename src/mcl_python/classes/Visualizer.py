@@ -11,12 +11,12 @@ class Visualizer:
 
     def __init__(self):
         plt.ion()
-        self.fig, self.ax = plt.subplots(nrows=2, ncols=3, gridspec_kw={'width_ratios': [1, 1, 1]}, figsize=[10, 6])
+        self.fig, self.ax = plt.subplots(nrows=1, ncols=3, gridspec_kw={'width_ratios': [1, 1, 1]}, figsize=[10, 3])
         
-        self.odom_subplot       = self.ax[1, 2]
-        self.laser_subplot      = self.ax[0, 1]
-        self.map_subplot        = self.ax[0, 0]
-        self.laser_proj_subplot = self.ax[0, 2]
+        # self.odom_subplot       = self.ax[1, 2]
+        self.laser_subplot      = self.ax[1]
+        self.map_subplot        = self.ax[0]
+        self.laser_proj_subplot = self.ax[2]
 
         self.configure_subplots()
 
@@ -24,10 +24,10 @@ class Visualizer:
         self.plot_counter = 0
 
     def configure_subplots(self):
-        self.odom_subplot.axis(xmin=-2.9,xmax=0)
-        self.odom_subplot.axis(ymin=-8.5,ymax=-14.1)
+        # self.odom_subplot.axis(xmin=-2.9,xmax=0)
+        # self.odom_subplot.axis(ymin=-8.5,ymax=-14.1)
         self.map_subplot.set_title("Map with particles")
-        self.odom_subplot.set_title("Odometry data")
+        # self.odom_subplot.set_title("Odometry data")
         self.laser_subplot.set_title("Likelihood field")
         self.laser_proj_subplot.set_title("Laser projection")
 
@@ -44,20 +44,23 @@ class Visualizer:
         self.draw()
 
     def plot_map(self, map):
+        
         self.map_subplot.imshow(map.map_matrix, cmap='gray')
         self.map_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
         self.map_subplot.axis(ymin=map.roi_ymax,ymax=map.roi_ymin)
 
     def plot_particles(self, map, particle_filter):
-        self.plot_map(map)
-        for particle in particle_filter.particles:
-            self.plot_single_particle(particle, self.map_subplot)
-        self.draw()
+        if self.plot_counter % 100 == 0:
+            self.map_subplot.cla()
+            self.plot_map(map)
+            for particle in particle_filter.particles:
+                self.plot_single_particle(particle, self.map_subplot)
+            self.draw()
 
     def plot_single_particle(self, particle, subplot):
         marker, scale = self.gen_arrow_head_marker(particle.theta)
         marker_size = 15
-        subplot.scatter([particle.x], [particle.y], c='red', marker=marker, s=(marker_size*scale)**2, alpha=0.3)
+        subplot.scatter([particle.x], [particle.y], c='red', marker=marker, s=(marker_size*scale)**2, alpha=particle.weight)
 
     def plot_likelihood_field(self, map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')
@@ -79,7 +82,6 @@ class Visualizer:
                         current_angle = laser_msg.angle_min + i*laser_msg.angle_increment
                         self.laser_proj_subplot.scatter([range*np.cos(current_angle)], [range*np.sin(current_angle)], c='gray', marker='.')
             self.draw()
-            self.plot_counter = 0
         self.plot_counter += 1
         
 

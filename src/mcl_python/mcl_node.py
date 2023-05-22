@@ -48,11 +48,16 @@ class MonteCarloLocalizationNode:
         self.sub_scan_topic = rospy.Subscriber('/scan', LaserScan, self.callback_read_laser)
 
     def callback_read_odometry(self, msg):
-        self.particle_filter.odometry_motion_model(self, msg)
+        # self.particle_filter.odometry_motion_model(self, msg)
         pass
 
     def callback_read_laser(self, msg):
+        mutex = Lock()
+        mutex.acquire()
         self.visualizer.plot_laser_projection(msg)
+        self.particle_filter.likelihood_field_algorithm(msg)
+        self.visualizer.plot_particles(self.map, self.particle_filter)
+        mutex.release()
 
 def main():
     
