@@ -60,7 +60,7 @@ class Visualizer:
     def plot_single_particle(self, particle, subplot):
         marker, scale = self.gen_arrow_head_marker(particle.theta)
         marker_size = 15
-        subplot.scatter([particle.x], [particle.y], c='red', marker=marker, s=(marker_size*scale)**2, alpha=particle.weight)
+        subplot.scatter([particle.x], [particle.y], c='red', marker=marker, s=(marker_size*scale)**2, alpha=0.5)
 
     def plot_likelihood_field(self, map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')

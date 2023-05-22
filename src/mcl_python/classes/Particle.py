@@ -11,3 +11,6 @@ class Particle:
     def set_weight(self, weight):
         self.weight = weight
 
+    def print_pos(self):
+        print(self.x, self.y, self.theta)
+

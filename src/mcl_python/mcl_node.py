@@ -32,7 +32,7 @@ class MonteCarloLocalizationNode:
         self.node_frequency = rospy.get_param("node_frequency", 1)
 
         self.particle_filter = ParticleFilter(self.map)
-        self.particle_filter.initialize_particles(300)
+        self.particle_filter.initialize_particles(1)
 
         visualizer = Visualizer()
         self.visualizer = visualizer
@@ -41,6 +41,9 @@ class MonteCarloLocalizationNode:
         self.sub_pose_topic = None
         self.initialize_subscribers()
 
+        self.last_odometry_msg = None
+        self.callback_counter = 0
+
         self.visualizer.spin()      
 
     def initialize_subscribers(self):
@@ -48,8 +51,20 @@ class MonteCarloLocalizationNode:
         self.sub_scan_topic = rospy.Subscriber('/scan', LaserScan, self.callback_read_laser)
 
     def callback_read_odometry(self, msg):
-        # self.particle_filter.odometry_motion_model(self, msg)
-        pass
+        if self.callback_counter % 10 == 0:
+            mutex = Lock()
+            mutex.acquire()
+            if self.last_odometry_msg:
+                u  = [
+                    int(round((msg.pose.pose.position.x - self.last_odometry_msg.pose.pose.position.x)/0.05, 0)),
+                    int(round((msg.pose.pose.position.y - self.last_odometry_msg.pose.pose.position.y)/0.05, 0)),
+                    msg.pose.pose.orientation.w - self.last_odometry_msg.pose.pose.orientation.w
+                ]
+                print(u)
+                self.particle_filter.motion_model_odometry(u, [0.1, 0.1, 0.01, 0.01])
+            self.last_odometry_msg = msg
+            mutex.release()
+        self.callback_counter += 1
 
     def callback_read_laser(self, msg):
         mutex = Lock()
