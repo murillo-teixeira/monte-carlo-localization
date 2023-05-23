@@ -18,6 +18,8 @@ class Visualizer:
         self.map_subplot        = self.ax[0]
         self.laser_proj_subplot = self.ax[2]
 
+        self.particle_set = None
+
         self.configure_subplots()
 
         # Plotar apenas a cada 10 chamadas
@@ -50,17 +52,31 @@ class Visualizer:
         self.map_subplot.axis(ymin=map.roi_ymax,ymax=map.roi_ymin)
 
     def plot_particles(self, map, particle_filter):
-        if self.plot_counter % 100 == 0:
+        if self.plot_counter % 20 == 0:
             self.map_subplot.cla()
+            self.map_subplot.set_title('Map and particles')
             self.plot_map(map)
-            for particle in particle_filter.particles:
-                self.plot_single_particle(particle, self.map_subplot)
+            # for particle in particle_filter.particles:
+            #     self.plot_single_particle(particle, self.map_subplot)
+            self.particle_set = self.map_subplot.quiver(
+                [particle.x for particle in particle_filter.particles], 
+                [particle.y for particle in particle_filter.particles], 
+                [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
+                [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
+                color='red', angles='xy', pivot='mid')
             self.draw()
 
+    def update_particles(self, particle_filter):
+        X = np.array([particle.x for particle in particle_filter.particles])
+        Y = np.array([particle.y for particle in particle_filter.particles])
+        U = [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
+        V = [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
+        self.particle_set.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
+        self.particle_set.set_UVC(U, V)
+
     def plot_single_particle(self, particle, subplot):
-        marker, scale = self.gen_arrow_head_marker(particle.theta)
-        marker_size = 15
-        subplot.scatter([particle.x], [particle.y], c='red', marker=marker, s=(marker_size*scale)**2, alpha=0.5)
+        subplot.quiver([particle.x], [particle.y], [0.1*np.cos(particle.theta)], [0.1*np.sin(particle.theta)], color='red', angles='xy', pivot='mid')
+        
 
     def plot_likelihood_field(self, map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')
@@ -83,20 +99,3 @@ class Visualizer:
                         self.laser_proj_subplot.scatter([range*np.cos(current_angle)], [range*np.sin(current_angle)], c='gray', marker='.')
             self.draw()
         self.plot_counter += 1
-        
-
-    def gen_arrow_head_marker(self, rot):
-        arr = np.array([[-.3, .3], [-.3, -.3], [.6, 0], [-.3, .3]])
-        angle = rot
-        rot_mat = np.array([
-            [np.cos(angle), np.sin(angle)],
-            [-np.sin(angle), np.cos(angle)]])
-        arr = np.matmul(arr, rot_mat)
-        x0 = np.amin(arr[:, 0])
-        x1 = np.amax(arr[:, 0])
-        y0 = np.amin(arr[:, 1])
-        y1 = np.amax(arr[:, 1])
-        scale = np.amax(np.abs([x0, x1, y0, y1]))
-        codes = [mpl.path.Path.MOVETO, mpl.path.Path.LINETO,mpl.path.Path.LINETO, mpl.path.Path.CLOSEPOLY]
-        arrow_head_marker = mpl.path.Path(arr, codes)
-        return arrow_head_marker, scale

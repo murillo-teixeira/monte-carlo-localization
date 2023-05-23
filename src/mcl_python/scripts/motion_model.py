@@ -52,8 +52,7 @@ theta_after = [particle[2] for particle in new_particles]
 fig, ax = plt.subplots(figsize=(8, 6))
 
 # Plot the particles before motion update
-ax.quiver(x_before, y_before, [math.cos(theta) for theta in theta_before], [math.sin(theta) for theta in theta_before],
-          angles='xy', scale_units='xy', scale=10, color='blue', label='Before')
+ax.quiver(x_before, y_before, [0.01*math.cos(theta) for theta in theta_before], [0.01*math.sin(theta) for theta in theta_before])
 
 # Plot the particles after motion update
 ax.quiver(x_after, y_after, [math.cos(theta) for theta in theta_after], [math.sin(theta) for theta in theta_after],

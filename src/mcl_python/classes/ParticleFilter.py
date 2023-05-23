@@ -12,9 +12,9 @@ class ParticleFilter:
         self.x_sensor = 0
         self.y_sensor = 0
 
-        self.zhit  = 1
-        self.zrand = 1
-        self.zmax  = 1
+        self.zhit  = 0.7
+        self.zrand = 0.05
+        self.zmax  = 0.25
 
 
     def initialize_particles(self, number_of_particles = 50):
@@ -34,20 +34,29 @@ class ParticleFilter:
             particle.reset_weight()
 
     def likelihood_field_algorithm(self, laser_msg):
+        weights = []
         for i, particle in enumerate(self.particles):
             q = 1
             for i, range in enumerate(laser_msg.ranges):
-                current_angle = laser_msg.angle_min + i*laser_msg.angle_increment
-                x_meas = (particle.x + \
-                    self.x_sensor*np.cos(particle.theta) - \
-                    self.y_sensor*np.sin(particle.theta) + \
-                    range/0.05*np.cos(particle.theta + current_angle))
-                y_meas = (particle.y + \
-                    self.y_sensor*np.cos(particle.theta) + \
-                    self.x_sensor*np.sin(particle.theta) + \
-                    range/0.05*np.sin(particle.theta + current_angle))
-                q = q*(self.zhit + self.zrand/self.zmax)
-            particle.set_weight(q)
+                if range and (laser_msg.range_min < range < laser_msg.range_max):
+                    current_angle = laser_msg.angle_min + i*laser_msg.angle_increment
+                    x_meas = (particle.x + \
+                        self.x_sensor*np.cos(particle.theta) - \
+                        self.y_sensor*np.sin(particle.theta) + \
+                        range/0.05*np.cos(particle.theta + current_angle))
+                    y_meas = (particle.y + \
+                        self.y_sensor*np.cos(particle.theta) + \
+                        self.x_sensor*np.sin(particle.theta) + \
+                        range/0.05*np.sin(particle.theta + current_angle))
+                    q = q*(self.zhit*self.map.likelihood_field[int(y_meas), int(x_meas)] + self.zrand/self.zmax)
+            weights.append(-np.log(q, where = q > 0))
+        
+        # Maybe normalize?
+        # total = sum(weights)
+        # weights = np.array(weights)/total
+        
+        for i, particle in enumerate(self.particles):
+            particle.set_weight(weights[i])
 
     def motion_model_odometry(self, u, alpha):
         new_particles = []
@@ -61,7 +70,7 @@ class ParticleFilter:
             delta_rot1 = math.atan2(u[1], u[0]) - math.atan2(x, y)
             delta_trans = math.sqrt((u[0])**2 + (u[1])**2)
             delta_rot2 = u[2] - theta - delta_rot1
-            print(delta_rot1, delta_rot2, delta_trans)
+
             # delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
             # delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
             # delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)

@@ -32,7 +32,7 @@ class MonteCarloLocalizationNode:
         self.node_frequency = rospy.get_param("node_frequency", 1)
 
         self.particle_filter = ParticleFilter(self.map)
-        self.particle_filter.initialize_particles(1)
+        self.particle_filter.initialize_particles(10)
 
         visualizer = Visualizer()
         self.visualizer = visualizer
@@ -60,7 +60,7 @@ class MonteCarloLocalizationNode:
                     int(round((msg.pose.pose.position.y - self.last_odometry_msg.pose.pose.position.y)/0.05, 0)),
                     msg.pose.pose.orientation.w - self.last_odometry_msg.pose.pose.orientation.w
                 ]
-                print(u)
+                print('u', u)
                 self.particle_filter.motion_model_odometry(u, [0.1, 0.1, 0.01, 0.01])
             self.last_odometry_msg = msg
             mutex.release()
@@ -71,7 +71,7 @@ class MonteCarloLocalizationNode:
         mutex.acquire()
         self.visualizer.plot_laser_projection(msg)
         self.particle_filter.likelihood_field_algorithm(msg)
-        self.visualizer.plot_particles(self.map, self.particle_filter)
+        self.visualizer.update_particles(self.particle_filter)
         mutex.release()
 
 def main():
