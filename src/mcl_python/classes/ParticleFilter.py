@@ -62,7 +62,7 @@ class ParticleFilter:
         new_particles = []
         
         for particle in self.particles:
-            particle.print_pos()
+            # particle.print_pos()
             x = particle.x
             y = particle.y
             theta = particle.theta
