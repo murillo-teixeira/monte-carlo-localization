@@ -4,7 +4,7 @@ import matplotlib.pyplot as plt
 def resampler(particles, weights):
     number_of_particles = len(particles)
     new_particles = []
-    r = random.uniform(0, number_of_particles)
+    r = random.uniform(0, 1/number_of_particles)
     c = weights[0]
     i = 1
 
@@ -12,7 +12,7 @@ def resampler(particles, weights):
         u = r + (m - 1)/number_of_particles
         while u > c:
             i += 1
-            c += weights[i]
+            c += weights[i-1]
         
         new_particles.append(particles[i-1])
     
