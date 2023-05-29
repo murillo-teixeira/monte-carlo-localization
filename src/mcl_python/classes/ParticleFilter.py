@@ -103,7 +103,7 @@ class ParticleFilter:
             u = r + (m-1)*(1/number_of_particles)
             while u > c:
                 i += 1
-                for index, particle in enumerate(self.particles)
+                for index, particle in enumerate(self.particles):
                     if index==i:
                         c += particle.weight
                         break
