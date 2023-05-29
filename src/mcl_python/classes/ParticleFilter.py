@@ -95,6 +95,7 @@ class ParticleFilter:
         for index, obj in enumerate(self.particles):
             if index==0:
                 c = obj.weight
+                break
         
         i = 1
 
@@ -105,6 +106,7 @@ class ParticleFilter:
                 for index, particle in enumerate(self.particles)
                     if index==i:
                         c += particle.weight
+                        break
             new_particles.append(self.particles(i))
         
         self.particles=new_particles
