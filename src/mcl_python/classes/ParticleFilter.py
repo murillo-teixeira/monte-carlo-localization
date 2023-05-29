@@ -90,7 +90,7 @@ class ParticleFilter:
                 
         new_particles = []
 
-        r = random.uniform(0,number_of_particles)
+        r = random.uniform(0,1/number_of_particles)
         
         for index, obj in enumerate(self.particles):
             if index==0:
@@ -100,7 +100,7 @@ class ParticleFilter:
         i = 1
 
         for m in range(number_of_particles):
-            u = r + (m-1)*(1/number_of_particles)
+            u = r + (m-1)/number_of_particles
             while u > c:
                 i += 1
                 for index, particle in enumerate(self.particles):
