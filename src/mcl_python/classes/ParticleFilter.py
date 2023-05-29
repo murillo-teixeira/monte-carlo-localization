@@ -26,7 +26,10 @@ class ParticleFilter:
                 y = np.random.randint(0, self.map.roi_ymax)
                 if self.map.map_matrix[y][x] == 1.0:
                     is_position_valid = True
+                    x = x*0.05
+                    y = y*0.05
                     theta = np.random.uniform(0, 2*np.pi)
+
             self.particles.append(Particle(x, y, theta))
 
     def reset_particle_weights(self):
@@ -62,18 +65,18 @@ class ParticleFilter:
         new_particles = []
         
         for particle in self.particles:
-            # particle.print_pos()
             x = particle.x
             y = particle.y
             theta = particle.theta
             
             delta_rot1 = math.atan2(u[1], u[0]) - math.atan2(x, y)
-            delta_trans = math.sqrt((u[0])**2 + (u[1])**2)
+            delta_trans = np.linalg.norm(u[0], u[1])
             delta_rot2 = u[2] - theta - delta_rot1
-
+            
             # delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
             # delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
             # delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
+            
             delta_rot1_hat = delta_rot1
             delta_trans_hat = delta_trans
             delta_rot2_hat = delta_rot2

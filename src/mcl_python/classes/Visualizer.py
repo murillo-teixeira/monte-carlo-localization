@@ -56,28 +56,26 @@ class Visualizer:
             self.map_subplot.cla()
             self.map_subplot.set_title('Map and particles')
             self.plot_map(map)
-            # for particle in particle_filter.particles:
-            #     self.plot_single_particle(particle, self.map_subplot)
+            
             self.particle_set = self.map_subplot.quiver(
-                [particle.x for particle in particle_filter.particles], 
-                [particle.y for particle in particle_filter.particles], 
+                [int(particle.x/0.05) for particle in particle_filter.particles], 
+                [int(particle.y/0.05) for particle in particle_filter.particles], 
                 [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
                 [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
                 color='red', angles='xy', pivot='mid')
             self.draw()
 
     def update_particles(self, particle_filter):
-        X = np.array([particle.x for particle in particle_filter.particles])
-        Y = np.array([particle.y for particle in particle_filter.particles])
+        X = np.array([int(particle.x/0.05) for particle in particle_filter.particles])
+        Y = np.array([int(particle.y/0.05) for particle in particle_filter.particles])
         U = [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
         V = [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
         self.particle_set.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
         self.particle_set.set_UVC(U, V)
 
     def plot_single_particle(self, particle, subplot):
-        subplot.quiver([particle.x], [particle.y], [0.1*np.cos(particle.theta)], [0.1*np.sin(particle.theta)], color='red', angles='xy', pivot='mid')
+        subplot.quiver([int(particle.x/0.05)], [int(particle.y/0.05)], [0.1*np.cos(particle.theta)], [0.1*np.sin(particle.theta)], color='red', angles='xy', pivot='mid')
         
-
     def plot_likelihood_field(self, map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')
         self.laser_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
