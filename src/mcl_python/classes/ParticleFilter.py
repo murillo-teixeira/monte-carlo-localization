@@ -89,3 +89,27 @@ class ParticleFilter:
 
         self.particles = new_particles
 
+    def resampler(self, number_of_particles):
+                
+        new_particles = []
+
+        r = random.uniform(0,1/number_of_particles)
+        
+        for index, obj in enumerate(self.particles):
+            if index==0:
+                c = obj.weight
+                break
+        
+        i = 1
+
+        for m in range(number_of_particles):
+            u = r + (m-1)/number_of_particles
+            while u > c:
+                i += 1
+                for index, particle in enumerate(self.particles):
+                    if index==i:
+                        c += particle.weight
+                        break
+            new_particles.append(self.particles(i))
+        
+        self.particles=new_particles
