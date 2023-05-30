@@ -54,25 +54,24 @@ particles = []
 
 for i in range(size):
     if i < size/10:
-        random_array = [int(random.uniform(40,60)), int(random.uniform(40,60))]
+        random_array = [random.uniform(40,60), random.uniform(40,60)]
     else: 
-        random_array = [int(random.uniform(0,100)), int(random.uniform(0,100))]
+        random_array = [random.uniform(0,100), random.uniform(0,100)]
     particles.append(random_array)
 
 
 weights = generate_weights(size)
 
 # Set up the figure and axes
-fig, ax = plt.subplots(figsize=(100, 100))
+fig, ax = plt.subplots(1, 5, figsize=(10, 4))
 
 # Plot the initial particles
 x_initial = [particle[0] for particle in particles]
 y_initial = [particle[1] for particle in particles]
-ax.scatter(x_initial, y_initial, color='blue', marker='o', alpha=0.2, s=100, label='Initial')
-
-# Define colormap and marker styles
-cmap = get_cmap('tab10')
-markers = ['s', 'o', 'D', 'v', '^']
+ax[0].scatter(x_initial, y_initial, color='blue', marker='o', alpha=0.2, s=100, label='Initial')
+ax[0].set_xlabel('X')
+ax[0].set_ylabel('Y')
+ax[0].grid(True)
 num_iterations = 4
 
 for iteration in range(num_iterations):
@@ -80,19 +79,20 @@ for iteration in range(num_iterations):
     particles = resampled_particles
 
     # Plot each resampled particle individually with a different color and marker shape
-    marker = markers[iteration]
+    
     x_resampled = [particle[0] for particle in resampled_particles]
     y_resampled = [particle[1] for particle in resampled_particles]
-    ax.scatter(x_resampled, y_resampled,marker=marker, alpha=0.7,s=100, label='Iteration {}'.format(iteration + 1))
+    ax[iteration + 1].scatter(x_resampled, y_resampled,  color='blue', alpha=0.2,s=100, label='Iteration {}'.format(iteration + 1))
 
+    ax[iteration + 1].set_xlabel('X')
+    ax[iteration + 1].set_ylabel('Y')
+    ax[iteration + 1].grid(True)
     weights=generate_weights(size)
 
     print("\n\n\n\n\n")
     print(weights)
-    
-ax.set_xlabel('X')
-ax.set_ylabel('Y')
-ax.set_title('Resampler')
-ax.legend()
-ax.grid(True)
+
+fig.suptitle("Resampler", y=-0.9)
+
+plt.tight_layout()
 plt.show()
