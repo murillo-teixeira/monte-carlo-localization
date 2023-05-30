@@ -1,12 +1,40 @@
 import random
 import matplotlib.pyplot as plt
 from matplotlib.cm import get_cmap
+import numpy as np
+
+
+def generate_weights(size):
+    
+    #Creating the weights
+
+    weights = []
+
+    for i in range(size):
+        
+        if i<(size/10):
+            wannabeweight = random.uniform(5,8)
+        else: 
+            wannabeweight= random.uniform(0,5)
+        
+        weights.append(wannabeweight)
+
+    normalizer = sum(weights)
+    weights = [w/normalizer for w in weights]
+    print(weights)
+    return weights
+
+
+
 
 def resampler(particles, weights):
+
     number_of_particles = len(particles)
     new_particles = []
+    
     r = random.uniform(0, 1/number_of_particles)
     c = weights[0]
+    
     i = 1
 
     for m in range(number_of_particles):
@@ -19,14 +47,28 @@ def resampler(particles, weights):
     
     return new_particles
 
-# Example particles and weights
-particles = [[1, 2], [3, 4], [5, 6], [7, 8], [9, 10]]
-weights = [0.1, 0.2, 0.4, 0.1, 0.2]
+
+#Creating particles
+
+size = 100
+particles = []
+
+for i in range(size):
+    if i < size/10:
+        random_array = [int(random.uniform(4,6)), int(random.uniform(4,6))]
+    else: 
+        random_array = [int(random.uniform(0,10)), int(random.uniform(0,10))]
+    particles.append(random_array)
+
+print(particles)
+
+
+weights = generate_weights(size)
 
 # Set up the figure and axes
-fig, ax = plt.subplots(figsize=(8, 6))
+fig, ax = plt.subplots(figsize=(10, 10))
 
-# Plot the initial particles with transparency
+# Plot the initial particles
 x_initial = [particle[0] for particle in particles]
 y_initial = [particle[1] for particle in particles]
 ax.scatter(x_initial, y_initial, color='blue', marker='o', alpha=0.2, s=100, label='Initial')
@@ -37,19 +79,16 @@ markers = ['s', 'o', 'D', 'v', '^']
 num_iterations = 4
 
 for iteration in range(num_iterations):
-    print(weights)
     resampled_particles = resampler(particles, weights)
     particles = resampled_particles
-    if iteration == 1:
-        weights = [0.05, 0.1, 0.65, 0.05, 0.15]
-    elif iteration == 2:
-        weights = [0, 0.1, 0.8, 0, 0.1]
 
     # Plot each resampled particle individually with a different color and marker shape
     marker = markers[iteration]
     x_resampled = [particle[0] for particle in resampled_particles]
     y_resampled = [particle[1] for particle in resampled_particles]
     ax.scatter(x_resampled, y_resampled,marker=marker, alpha=0.7,s=100, label='Iteration {}'.format(iteration + 1))
+
+    weights=generate_weights(size)
     
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
