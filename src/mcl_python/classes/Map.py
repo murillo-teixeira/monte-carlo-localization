@@ -6,6 +6,7 @@ class Map:
     def __init__(self, map_file, map_roi):
         self.roi_xmin, self.roi_xmax, self.roi_ymin, self.roi_ymax = map_roi
         self.map_matrix = None
+        self.likelihood_field = None
         self.load_map(map_file)
         self.create_likelihood_field(35)
 
@@ -24,3 +25,7 @@ class Map:
         distance_transform = scipy.ndimage.distance_transform_edt(self.map_matrix)
         squared_distances = distance_transform**2
         self.likelihood_field = np.exp(-0.5 * (squared_distances / sigma_squared))
+
+    def get_meas_likelihood(self, x_meas, y_meas):
+        # return self.likelihood_field[int(y_meas/0.05), int(x_meas/0.05)]
+        return self.likelihood_field[y_meas, x_meas]

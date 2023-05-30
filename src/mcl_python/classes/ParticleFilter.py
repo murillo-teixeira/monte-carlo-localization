@@ -9,7 +9,7 @@ class ParticleFilter:
         self.particles = None
         self.map = map
 
-        self.x_sensor = 0
+        self.   x_sensor = 0
         self.y_sensor = 0
 
         self.zhit  = 0.7
@@ -37,29 +37,25 @@ class ParticleFilter:
             particle.reset_weight()
 
     def likelihood_field_algorithm(self, laser_msg):
-        weights = []
-        for i, particle in enumerate(self.particles):
-            q = 1
-            for i, range in enumerate(laser_msg.ranges):
-                if range and (laser_msg.range_min < range < laser_msg.range_max):
-                    current_angle = laser_msg.angle_min + i*laser_msg.angle_increment
-                    x_meas = (particle.x + \
-                        self.x_sensor*np.cos(particle.theta) - \
-                        self.y_sensor*np.sin(particle.theta) + \
-                        range/0.05*np.cos(particle.theta + current_angle))
-                    y_meas = (particle.y + \
-                        self.y_sensor*np.cos(particle.theta) + \
-                        self.x_sensor*np.sin(particle.theta) + \
-                        range/0.05*np.sin(particle.theta + current_angle))
-                    q = q*(self.zhit*self.map.likelihood_field[int(y_meas), int(x_meas)] + self.zrand/self.zmax)
-            weights.append(-np.log(q, where = q > 0))
-        
-        # Maybe normalize?
-        # total = sum(weights)
-        # weights = np.array(weights)/total
-        
-        for i, particle in enumerate(self.particles):
-            particle.set_weight(weights[i])
+        measurement_angles = np.arange(laser_msg.angle_min, laser_msg.angle_max + laser_msg.angle_increment, laser_msg.angle_increment)
+        for particle in self.particles:
+            # The position (x, y) of the measurement of the particle was the robot
+            x_meas = particle.x + laser_msg.ranges*np.cos(measurement_angles + particle.theta)
+            y_meas = particle.y + laser_msg.ranges*np.sin(measurement_angles + particle.theta)
+
+            # To exclude invalid readings and prepare for lookup likelihood field
+            valid_readings = (np.array(laser_msg.ranges) > laser_msg.range_min) & (np.array(laser_msg.ranges) < laser_msg.range_max)
+            x_meas_to_field = (x_meas[valid_readings]/0.05).astype(int)
+            y_meas_to_field = (y_meas[valid_readings]/0.05).astype(int)
+            
+            # Calculating the weight
+            meas_likelihood = self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field)
+            weight = np.prod(self.zhit*meas_likelihood + self.zrand/self.zmax)
+            particle.weight = weight
+
+            # Solutions: 
+            # 1) Normalize
+            # 2) Log: -np.log(q, where = q > 0)
 
     def motion_model_odometry(self, u, alpha):
         new_particles = []
@@ -69,18 +65,14 @@ class ParticleFilter:
             y = particle.y
             theta = particle.theta
             
-            delta_rot1 = math.atan2(u[1], u[0]) - math.atan2(x, y)
-            delta_trans = np.linalg.norm(u[0], u[1])
-            delta_rot2 = u[2] - theta - delta_rot1
-            
-            # delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
-            # delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
-            # delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
-            
-            delta_rot1_hat = delta_rot1
-            delta_trans_hat = delta_trans
-            delta_rot2_hat = delta_rot2
-            
+            delta_rot1 = math.atan2(u[1], u[0]) - u[3]
+            delta_trans = math.sqrt((u[0])**2 + (u[1])**2)
+            delta_rot2 = u[2] - delta_rot1
+
+            delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
+            delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
+            delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
+
             x_hat = x + delta_trans_hat * math.cos(theta + delta_rot1_hat)
             y_hat = y + delta_trans_hat * math.sin(theta + delta_rot1_hat)
             theta_hat = theta + delta_rot1_hat + delta_rot2_hat
@@ -89,16 +81,12 @@ class ParticleFilter:
 
         self.particles = new_particles
 
-    def resampler(self, number_of_particles):
-                
+    def resampler(self):
+        number_of_particles = len(self.particles)
         new_particles = []
 
-        r = random.uniform(0,1/number_of_particles)
-        
-        for index, obj in enumerate(self.particles):
-            if index==0:
-                c = obj.weight
-                break
+        r = random.uniform(0, 1/number_of_particles)
+        c = self.particles[0].weight
         
         i = 1
 
@@ -106,10 +94,7 @@ class ParticleFilter:
             u = r + (m-1)/number_of_particles
             while u > c:
                 i += 1
-                for index, particle in enumerate(self.particles):
-                    if index==i:
-                        c += particle.weight
-                        break
-            new_particles.append(self.particles(i))
-        
-        self.particles=new_particles
+                c += self.particles[i].weight
+            new_particles.append(self.particles[i])
+
+        self.particles = new_particles

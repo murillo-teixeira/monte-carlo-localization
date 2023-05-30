@@ -2,11 +2,9 @@
 
 import rospy
 
-from nav_msgs.msg import Odometry, OccupancyGrid
-from std_msgs.msg import Float64
+from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
 
-from classes.Particle import Particle
 from classes.ParticleFilter import ParticleFilter
 from classes.Map import Map
 from classes.Visualizer import Visualizer
@@ -35,7 +33,7 @@ class MonteCarloLocalizationNode:
         self.last_odometry_msg = None
         self.current_odometry_msg = None
         self.current_laser_scan = None
-
+        self.mutex = Lock()
         self.initialize_subscribers()
 
         self.initialize_timer()
@@ -52,7 +50,6 @@ class MonteCarloLocalizationNode:
         ]
         self.node_frequency = rospy.get_param("node_frequency", 1)
 
-
     def initialize_timer(self):
         self.timer = rospy.Timer(rospy.Duration(1.0 / self.node_frequency), self.timer_callback) 
 
@@ -67,6 +64,7 @@ class MonteCarloLocalizationNode:
         self.current_laser_scan = msg
 
     def timer_callback(self, timer):
+        self.mutex.acquire()
         if self.last_odometry_msg:
             u  = [
                 self.current_odometry_msg.pose.pose.position.x - \
@@ -74,23 +72,30 @@ class MonteCarloLocalizationNode:
                 self.current_odometry_msg.pose.pose.position.y - \
                     self.last_odometry_msg.pose.pose.position.y,
                 self.current_odometry_msg.pose.pose.orientation.w - \
-                    self.last_odometry_msg.pose.pose.orientation.w
+                    self.last_odometry_msg.pose.pose.orientation.w,
+                self.last_odometry_msg.pose.pose.orientation.w
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.1, 0.1, 0.01, 0.01])
+            self.particle_filter.motion_model_odometry(u, [0.01, 0.01, 0.01, 0.01])
             
-            # Plot the laser projection
-            self.visualizer.plot_laser_projection(self.current_laser_scan)
+            # Update the particles' weights
             
             # Run the likelihood field algorithm
             self.particle_filter.likelihood_field_algorithm(self.current_laser_scan)
+
+            # Plot the laser projection
+            self.visualizer.plot_laser_projection(self.current_laser_scan)
             
-            # Update the particles' weights
             self.visualizer.update_particles(self.particle_filter)
+            # Resampling particles
+            # self.particle_filter.resampler()
+
+            # Update the particles' weights
+            # self.visualizer.update_particles(self.particle_filter)
 
         self.last_odometry_msg = self.current_odometry_msg
-
+        self.mutex.release()
 
 def main():
     MonteCarloLocalizationNode()
