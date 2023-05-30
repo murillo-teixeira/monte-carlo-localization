@@ -21,7 +21,6 @@ def generate_weights(size):
 
     normalizer = sum(weights)
     weights = [w/normalizer for w in weights]
-    print(weights)
     return weights
 
 
@@ -55,18 +54,16 @@ particles = []
 
 for i in range(size):
     if i < size/10:
-        random_array = [int(random.uniform(4,6)), int(random.uniform(4,6))]
+        random_array = [int(random.uniform(40,60)), int(random.uniform(40,60))]
     else: 
-        random_array = [int(random.uniform(0,10)), int(random.uniform(0,10))]
+        random_array = [int(random.uniform(0,100)), int(random.uniform(0,100))]
     particles.append(random_array)
-
-print(particles)
 
 
 weights = generate_weights(size)
 
 # Set up the figure and axes
-fig, ax = plt.subplots(figsize=(10, 10))
+fig, ax = plt.subplots(figsize=(100, 100))
 
 # Plot the initial particles
 x_initial = [particle[0] for particle in particles]
@@ -89,6 +86,9 @@ for iteration in range(num_iterations):
     ax.scatter(x_resampled, y_resampled,marker=marker, alpha=0.7,s=100, label='Iteration {}'.format(iteration + 1))
 
     weights=generate_weights(size)
+
+    print("\n\n\n\n\n")
+    print(weights)
     
 ax.set_xlabel('X')
 ax.set_ylabel('Y')
