@@ -3,3 +3,8 @@ map_roi_xmin: 480
 map_roi_xmax: 1000
 map_roi_ymin: 800
 map_roi_ymax: 1300
+zhit: 0.5
+zrand: 0.5
+x_sensor: 0
+y_sensor: 0
+sigma_squared: 70

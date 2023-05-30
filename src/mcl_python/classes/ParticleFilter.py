@@ -5,16 +5,15 @@ from classes.Particle import Particle
 from classes.Map import Map
 
 class ParticleFilter:
-    def __init__(self, map : Map):
+    def __init__(self, map : Map, zhit, zrand, x_sensor, y_sensor):
         self.particles = None
         self.map = map
 
-        self.   x_sensor = 0
-        self.y_sensor = 0
+        self.x_sensor = x_sensor
+        self.y_sensor = y_sensor
 
-        self.zhit  = 0.7
-        self.zrand = 0.05
-        self.zmax  = 0.25
+        self.zhit  = zhit
+        self.zrand = zrand
 
 
     def initialize_particles(self, number_of_particles = 50):
@@ -26,8 +25,8 @@ class ParticleFilter:
                 y = np.random.randint(0, self.map.roi_ymax)
                 if self.map.map_matrix[y][x] == 1.0:
                     is_position_valid = True
-                    x = x*0.05
-                    y = y*0.05
+                    x = x*self.map.resolution
+                    y = y*self.map.resolution
                     theta = np.random.uniform(0, 2*np.pi)
 
             self.particles.append(Particle(x, y, theta))
@@ -45,13 +44,14 @@ class ParticleFilter:
 
             # To exclude invalid readings and prepare for lookup likelihood field
             valid_readings = (np.array(laser_msg.ranges) > laser_msg.range_min) & (np.array(laser_msg.ranges) < laser_msg.range_max)
-            x_meas_to_field = (x_meas[valid_readings]/0.05).astype(int)
-            y_meas_to_field = (y_meas[valid_readings]/0.05).astype(int)
+            x_meas_to_field = (x_meas[valid_readings]/self.map.resolution).astype(int)
+            y_meas_to_field = (y_meas[valid_readings]/self.map.resolution).astype(int)
             
             # Calculating the weight
             meas_likelihood = self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field)
-            weight = np.prod(self.zhit*meas_likelihood + self.zrand/self.zmax)
-            particle.weight = weight
+            weight = np.sum(self.zhit*meas_likelihood + self.zrand)
+            particle.weight = 0.5
+            print(particle.weight)
 
             # Solutions: 
             # 1) Normalize
@@ -84,15 +84,13 @@ class ParticleFilter:
     def resampler(self):
         number_of_particles = len(self.particles)
         new_particles = []
-
         r = random.uniform(0, 1/number_of_particles)
         c = self.particles[0].weight
-        
-        i = 1
-
+    
         for m in range(number_of_particles):
+            i = 1
             u = r + (m-1)/number_of_particles
-            while u > c:
+            while (u > c) and (i < number_of_particles - 1):
                 i += 1
                 c += self.particles[i].weight
             new_particles.append(self.particles[i])

@@ -62,7 +62,7 @@ class Visualizer:
                 [int(particle.y/0.05) for particle in particle_filter.particles], 
                 [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
                 [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
-                color='red', angles='xy', pivot='mid')
+                color='red', alpha=0.3, angles='xy', pivot='mid')
             self.draw()
 
     def update_particles(self, particle_filter):

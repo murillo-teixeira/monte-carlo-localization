@@ -7,6 +7,7 @@ class Map:
         self.roi_xmin, self.roi_xmax, self.roi_ymin, self.roi_ymax = map_roi
         self.map_matrix = None
         self.likelihood_field = None
+        self.resolution = None
         self.load_map(map_file)
         self.create_likelihood_field(35)
 
@@ -15,6 +16,8 @@ class Map:
             lines = f.readlines()
             self.width, self.height = np.array(lines[2].split(), dtype=int)
             map_array = np.array([el for el in lines[4]], dtype=np.int16)
+            self.resolution = float(lines[1].split()[3])
+            print("RESOLUTION: ", self.resolution)
             # print('unique: ', np.unique(map_array))
             self.map_matrix = np.array(map_array, dtype=float).reshape(self.height, self.width)
             self.map_matrix[self.map_matrix==205] = 0.5

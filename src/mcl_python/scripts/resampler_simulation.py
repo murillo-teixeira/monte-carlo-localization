@@ -20,7 +20,11 @@ def generate_weights(size):
         weights.append(wannabeweight)
 
     normalizer = sum(weights)
-    weights = [w/normalizer for w in weights]
+    # weights = [w/normalizer for w in weights]
+
+    # Testando o caso de todos os pesos iguais
+    weights = [0.5 for w in weights]
+    
     return weights
 
 
