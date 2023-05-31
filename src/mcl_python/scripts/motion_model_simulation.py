@@ -16,8 +16,8 @@ def motion_model_odometry(particles, u, alpha):
         delta_trans = math.sqrt((u[0])**2 + (u[1])**2)
         delta_rot2 = u[2] - delta_rot1
 
-        print("desl:", math.atan2(u[1], u[0]))
-        print('deltas:', delta_rot1, delta_trans, delta_rot2)
+        # print("desl:", math.atan2(u[1], u[0]))
+        # print('deltas:', delta_rot1, delta_trans, delta_rot2)
         delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
         delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
         delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
