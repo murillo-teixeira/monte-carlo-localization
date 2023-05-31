@@ -89,7 +89,7 @@ class ParticleFilter:
     
         for m in range(number_of_particles):
             i = 1
-            u = r + (m-1)/number_of_particles
+            u = r + (m)/number_of_particles
             while (u > c) and (i < number_of_particles - 1):
                 i += 1
                 c += self.particles[i].weight

@@ -20,10 +20,11 @@ def generate_weights(size):
         weights.append(wannabeweight)
 
     normalizer = sum(weights)
-    # weights = [w/normalizer for w in weights]
+    weights = [w/normalizer for w in weights]
 
     # Testando o caso de todos os pesos iguais
-    weights = [0.5 for w in weights]
+    # weights = [0.0/normalizer for w in weights]
+    print(weights)
     
     return weights
 
@@ -41,11 +42,11 @@ def resampler(particles, weights):
     i = 1
 
     for m in range(number_of_particles):
-        u = r + (m - 1)/number_of_particles
+        u = r + (m)/number_of_particles
         while u > c:        #in this cycle we find the best place in our new particle set for the particle m
             i += 1
             c += weights[i-1]
-        
+
         new_particles.append(particles[i-1])
     
     return new_particles
