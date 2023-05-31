@@ -171,6 +171,6 @@ for i, ax in enumerate(axes.flatten()[1:]):
         # q = q*factor
     ax.set_title(f"Weight: {q:.2e}")
 
-plt.suptitle("Likelihood field algorithm")
+# plt.suptitle("Likelihood field algorithm")
 plt.tight_layout(rect=[0, 0.03, 1, 0.95])
 plt.show()

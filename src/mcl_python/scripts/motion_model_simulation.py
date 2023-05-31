@@ -36,13 +36,13 @@ def motion_model_odometry(particles, u, alpha):
 
 # Generate some example particles
 num_particles = 20
-particles = [[random.uniform(0, 1), random.uniform(0, 0.5), np.pi/2] for _ in range(num_particles)]
+particles = [[random.uniform(0, 1), random.uniform(0, 1), np.pi/2] for _ in range(num_particles)]
 
 # Example odometry input
 u = [0, 1.0, 0, 0.0]
 
 # Example alpha values
-alpha = [0.2, 0.2, 0.02, 0.02]
+alpha = [0.05, 0.05, 0.02, 0.02]
 
 # Set up the figure and axes
 fig, ax = plt.subplots(figsize=(8, 6))
@@ -81,6 +81,6 @@ ax.set_ylabel('Y')
 ax.set_xlim([-1, 2])
 ax.set_ylim([0, 7])
 ax.legend()
-ax.set_title('Motion Model Odometry')
+# ax.set_title('Motion Model Odometry')
 ax.grid(True)
 plt.show()

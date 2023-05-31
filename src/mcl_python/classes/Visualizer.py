@@ -11,12 +11,16 @@ class Visualizer:
 
     def __init__(self):
         plt.ion()
-        self.fig, self.ax = plt.subplots(nrows=1, ncols=3, gridspec_kw={'width_ratios': [1, 1, 1]}, figsize=[10, 3])
+        self.fig, self.axes = plt.subplots(nrows=2, ncols=2, gridspec_kw={'width_ratios': [1, 1], 'height_ratios': [1, 1]}, figsize=[6, 6])
         
-        # self.odom_subplot       = self.ax[1, 2]
-        self.laser_subplot      = self.ax[1]
-        self.map_subplot        = self.ax[0]
-        self.laser_proj_subplot = self.ax[2]
+        for ax in self.axes.flatten():
+            ax.set_xticks([])
+            ax.set_yticks([])
+
+        self.odom_subplot       = self.axes[0, 1]
+        self.laser_subplot      = self.axes[1, 1]
+        self.map_subplot        = self.axes[0, 0]
+        self.laser_proj_subplot = self.axes[1, 0]
 
         self.particle_set = None
 
@@ -26,10 +30,10 @@ class Visualizer:
         self.plot_counter = 0
 
     def configure_subplots(self):
-        # self.odom_subplot.axis(xmin=-2.9,xmax=0)
-        # self.odom_subplot.axis(ymin=-8.5,ymax=-14.1)
+        self.odom_subplot.axis(xmin=-5,xmax=1)
+        self.odom_subplot.axis(ymin=-8.5,ymax=-14.5)
         self.map_subplot.set_title("Map with particles")
-        # self.odom_subplot.set_title("Odometry data")
+        self.odom_subplot.set_title("Odometry data")
         self.laser_subplot.set_title("Likelihood field")
         self.laser_proj_subplot.set_title("Laser projection")
 
@@ -41,29 +45,24 @@ class Visualizer:
         plt.pause(0.01)
 
     def plot_odometry_reading(self, x, y, theta):
-        odom_particle = Particle(x, y, -theta)
+        odom_particle = Particle(x, y, theta)
         self.plot_single_particle(odom_particle, self.odom_subplot)
         self.draw()
 
     def plot_map(self, map):
-        
         self.map_subplot.imshow(map.map_matrix, cmap='gray')
         self.map_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
         self.map_subplot.axis(ymin=map.roi_ymax,ymax=map.roi_ymin)
 
     def plot_particles(self, map, particle_filter):
-        if self.plot_counter % 20 == 0:
-            self.map_subplot.cla()
-            self.map_subplot.set_title('Map and particles')
-            self.plot_map(map)
-            
-            self.particle_set = self.map_subplot.quiver(
-                [int(particle.x/0.05) for particle in particle_filter.particles], 
-                [int(particle.y/0.05) for particle in particle_filter.particles], 
-                [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
-                [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
-                color='red', alpha=0.3, angles='xy', pivot='mid')
-            self.draw()
+        self.plot_map(map)
+        self.particle_set = self.map_subplot.quiver(
+            [int(particle.x/0.05) for particle in particle_filter.particles], 
+            [int(particle.y/0.05) for particle in particle_filter.particles], 
+            [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
+            [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
+            color='red', alpha=0.3, angles='xy', pivot='mid')
+        self.draw()
 
     def update_particles(self, particle_filter):
         X = np.array([int(particle.x/0.05) for particle in particle_filter.particles])
@@ -74,7 +73,7 @@ class Visualizer:
         self.particle_set.set_UVC(U, V)
 
     def plot_single_particle(self, particle, subplot):
-        subplot.quiver([int(particle.x/0.05)], [int(particle.y/0.05)], [0.1*np.cos(particle.theta)], [0.1*np.sin(particle.theta)], color='red', angles='xy', pivot='mid')
+        subplot.quiver([particle.x], [particle.y], [0.1*np.cos(particle.theta)], [0.1*np.sin(particle.theta)], color='red', angles='xy', pivot='mid')
         
     def plot_likelihood_field(self, map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')
@@ -84,6 +83,8 @@ class Visualizer:
     def plot_laser_projection(self, laser_msg):
         if self.plot_counter % 5 == 0:
             self.laser_proj_subplot.cla()
+            self.laser_proj_subplot.set_xticks([])
+            self.laser_proj_subplot.set_yticks([])
             self.laser_proj_subplot.axis(xmin=-6,xmax=6)
             self.laser_proj_subplot.axis(ymin=-6,ymax=6)
             self.laser_proj_subplot.set_title("Laser projection")

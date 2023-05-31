@@ -36,6 +36,7 @@ class ParticleFilter:
             particle.reset_weight()
 
     def likelihood_field_algorithm(self, laser_msg):
+        weights = []
         measurement_angles = np.arange(laser_msg.angle_min, laser_msg.angle_max + laser_msg.angle_increment, laser_msg.angle_increment)
         for particle in self.particles:
             # The position (x, y) of the measurement of the particle was the robot
@@ -50,12 +51,14 @@ class ParticleFilter:
             # Calculating the weight
             meas_likelihood = self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field)
             weight = np.sum(self.zhit*meas_likelihood + self.zrand)
-            particle.weight = 0.5
-            print(particle.weight)
+            weights.append(weight)    
+        
+        weights_sum = np.sum(weights)
+        weights = np.array(weights)/weights_sum
 
-            # Solutions: 
-            # 1) Normalize
-            # 2) Log: -np.log(q, where = q > 0)
+        for particle, weight in zip(self.particles, weights):
+            particle.weight = weight
+            # print(particle.weight)
 
     def motion_model_odometry(self, u, alpha):
         new_particles = []
@@ -85,12 +88,14 @@ class ParticleFilter:
         number_of_particles = len(self.particles)
         new_particles = []
         r = random.uniform(0, 1/number_of_particles)
-        c = self.particles[0].weight
     
+        i = 0
+        c = self.particles[0].weight
+        
         for m in range(number_of_particles):
-            i = 1
+            # if i < number_of_particles - 1: i = 0
             u = r + (m-1)/number_of_particles
-            while (u > c) and (i < number_of_particles - 1):
+            while (u > c):
                 i += 1
                 c += self.particles[i].weight
             new_particles.append(self.particles[i])
