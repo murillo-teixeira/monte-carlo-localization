@@ -23,8 +23,9 @@ def generate_weights(size):
     weights = [w/normalizer for w in weights]
 
     # Testando o caso de todos os pesos iguais
-    # weights = [0.0/normalizer for w in weights]
-    print(weights)
+    # weight=1
+    # normalizer =weight*size
+    # weights = [weight/normalizer for w in weights]
     
     return weights
 
@@ -43,7 +44,8 @@ def resampler(particles, weights):
 
     for m in range(number_of_particles):
         u = r + (m)/number_of_particles
-        while u > c:        #in this cycle we find the best place in our new particle set for the particle m
+        #in this cycle we find the best place in our new particle set for the particle m
+        while u > c:        
             i += 1
             c += weights[i-1]
 
@@ -54,7 +56,7 @@ def resampler(particles, weights):
 
 #Creating particles
 
-size = 100
+size = 250
 particles = []
 
 for i in range(size):
@@ -93,9 +95,6 @@ for iteration in range(num_iterations):
     ax[iteration + 1].set_ylabel('Y')
     ax[iteration + 1].grid(True)
     weights=generate_weights(size)
-
-    print("\n\n\n\n\n")
-    print(weights)
 
 fig.suptitle("Resampler", y=-0.9)
 
