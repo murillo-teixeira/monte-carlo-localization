@@ -49,26 +49,31 @@ class Visualizer:
         self.plot_single_particle(odom_particle, self.odom_subplot)
         self.draw()
 
-    def plot_map(self, map):
+    def plot_map(self, map : Map):
         self.map_subplot.imshow(map.map_matrix, cmap='gray')
         self.map_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
         self.map_subplot.axis(ymin=map.roi_ymax,ymax=map.roi_ymin)
 
-    def plot_particles(self, map, particle_filter):
+    def plot_particles(self, map : Map, particle_filter : ParticleFilter):
+        print("plotting particles")
         self.plot_map(map)
+        particle_filter.particles.update_attr()
         self.particle_set = self.map_subplot.quiver(
-            [int(particle.x/0.05) for particle in particle_filter.particles], 
-            [int(particle.y/0.05) for particle in particle_filter.particles], 
-            [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
-            [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
-            color='red', alpha=0.3, angles='xy', pivot='mid')
+            particle_filter.particles.x_positions/map.resolution,
+            particle_filter.particles.y_positions/map.resolution,
+            0.001*np.cos(particle_filter.particles.orientations),
+            0.001*np.sin(particle_filter.particles.orientations),
+            color='red', alpha=0.3, angles='xy', pivot='mid'
+        )
+        print('finished')
         self.draw()
 
-    def update_particles(self, particle_filter):
-        X = np.array([int(particle.x/0.05) for particle in particle_filter.particles])
-        Y = np.array([int(particle.y/0.05) for particle in particle_filter.particles])
-        U = [0.1*np.cos(particle.theta) for particle in particle_filter.particles], 
-        V = [0.1*np.sin(particle.theta) for particle in particle_filter.particles], 
+    def update_particles(self, map : Map, particle_filter : ParticleFilter):
+        particle_filter.particles.update_attr()
+        X = particle_filter.particles.x_positions/map.resolution
+        Y = particle_filter.particles.y_positions/map.resolution
+        U = 0.001*np.cos(particle_filter.particles.orientations),
+        V = 0.001*np.sin(particle_filter.particles.orientations),
         self.particle_set.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
         self.particle_set.set_UVC(U, V)
 
