@@ -3,7 +3,7 @@
 import rospy
 from threading import Lock
 import numpy as np
-np.random.seed(3)
+np.random.seed(0)
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -24,10 +24,9 @@ class MonteCarloLocalizationNode:
         self.map = Map(self.map_file, self.map_roi)
     
         self.particle_filter = ParticleFilter(self.map, self.zhit, self.zrand, self.x_sensor, self.y_sensor)
-        self.particle_filter.initialize_particles(1000)
+        self.particle_filter.initialize_particles(400)
 
-        visualizer = Visualizer()
-        self.visualizer = visualizer
+        self.visualizer = Visualizer()
         self.visualizer.plot_particles(self.map, self.particle_filter)
         self.visualizer.plot_likelihood_field(self.map)
         
@@ -85,10 +84,15 @@ class MonteCarloLocalizationNode:
                 current_theta
             ]
 
-            # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.2, 0.2, 0.1, 0.1])
+            if(current_x == previous_x and current_y == previous_y):
+                self.mutex.release()
+                return
+            
 
-            if np.hypot(u[0], u[1]) > 0.02:
+            # Run the odometry motion model to update the particles' positions
+            self.particle_filter.motion_model_odometry(u, [0.01, 0.01, 0.01, 0.01])
+            
+            if np.hypot(u[0], u[1]) > 0.01:
                 # Run the likelihood field algorithm
                 self.particle_filter.likelihood_field_algorithm(self.current_laser_scan)
 
@@ -101,13 +105,14 @@ class MonteCarloLocalizationNode:
             # Plot the laser projection
             self.visualizer.plot_laser_projection(self.current_laser_scan)
 
-            # Update the visualizer
-            self.visualizer.update_particles(self.particle_filter)
+            # # Update the visualizer
+            self.visualizer.update_particles(self.map, self.particle_filter)
 
         self.last_odometry_msg = self.current_odometry_msg
         self.mutex.release()
 
 def main():
+    print("[Versão 2]")
     MonteCarloLocalizationNode()
 
 if __name__ == '__main__':
