@@ -12,6 +12,8 @@ from classes.ParticleFilter import ParticleFilter
 from classes.Map import Map
 from classes.Visualizer import Visualizer
 
+from scripts.euler_from_quaternion import euler_from_quaternion
+
 class MonteCarloLocalizationNode:
 
     def __init__(self):
@@ -75,9 +77,19 @@ class MonteCarloLocalizationNode:
             previous_x = self.last_odometry_msg.pose.pose.position.x
             current_y = self.current_odometry_msg.pose.pose.position.y
             previous_y = self.last_odometry_msg.pose.pose.position.y
-            current_theta = self.current_odometry_msg.pose.pose.orientation.w
-            previous_theta = self.last_odometry_msg.pose.pose.orientation.w
-            
+            _, _, current_theta = euler_from_quaternion(
+                self.current_odometry_msg.pose.pose.orientation.x,
+                self.current_odometry_msg.pose.pose.orientation.y,
+                self.current_odometry_msg.pose.pose.orientation.z,
+                self.current_odometry_msg.pose.pose.orientation.w
+            )
+            _, _, previous_theta = euler_from_quaternion(
+                self.last_odometry_msg.pose.pose.orientation.x,
+                self.last_odometry_msg.pose.pose.orientation.y,
+                self.last_odometry_msg.pose.pose.orientation.z,
+                self.last_odometry_msg.pose.pose.orientation.w
+            )
+            print(current_theta)
             u  = [
                 current_x - previous_x,
                 current_y - previous_y,
