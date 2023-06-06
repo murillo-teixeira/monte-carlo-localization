@@ -3,7 +3,7 @@
 import rospy
 from threading import Lock
 import numpy as np
-np.random.seed(3)
+np.random.seed(0)
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -26,16 +26,16 @@ class MonteCarloLocalizationNode:
         self.map = Map(self.map_file, self.map_roi)
     
         self.particle_filter = ParticleFilter(self.map, self.zhit, self.zrand, self.x_sensor, self.y_sensor)
-        self.particle_filter.initialize_particles(100)
+        self.particle_filter.initialize_particles(1000)
 
-        visualizer = Visualizer()
-        self.visualizer = visualizer
+        self.visualizer = Visualizer()
         self.visualizer.plot_particles(self.map, self.particle_filter)
         self.visualizer.plot_likelihood_field(self.map)
         
         self.last_odometry_msg = None
+
         self.current_odometry_msg = None
-        self.current_laser_scan = None
+        self.current_laser_msg = None
         self.mutex = Lock()
         self.initialize_subscribers()
 
@@ -68,20 +68,26 @@ class MonteCarloLocalizationNode:
         self.current_odometry_msg = msg
 
     def callback_read_laser(self, msg):
-        self.current_laser_scan = msg
+        self.current_laser_msg = msg
 
     def timer_callback(self, timer):
-        self.mutex.acquire()
-        if self.last_odometry_msg:
-            current_x = self.current_odometry_msg.pose.pose.position.x
+        # print("Start", timer)
+        if not self.last_odometry_msg:
+            self.last_odometry_msg = self.current_odometry_msg
+        else:
+            self.processing_laser_msg = self.current_laser_msg
+            self.processing_odometry_msg = self.current_odometry_msg
+            
+            current_x = self.processing_odometry_msg.pose.pose.position.x
             previous_x = self.last_odometry_msg.pose.pose.position.x
-            current_y = self.current_odometry_msg.pose.pose.position.y
+            current_y = self.processing_odometry_msg.pose.pose.position.y
             previous_y = self.last_odometry_msg.pose.pose.position.y
+
             _, _, current_theta = euler_from_quaternion(
-                self.current_odometry_msg.pose.pose.orientation.x,
-                self.current_odometry_msg.pose.pose.orientation.y,
-                self.current_odometry_msg.pose.pose.orientation.z,
-                self.current_odometry_msg.pose.pose.orientation.w
+                self.processing_odometry_msg.pose.pose.orientation.x,
+                self.processing_odometry_msg.pose.pose.orientation.y,
+                self.processing_odometry_msg.pose.pose.orientation.z,
+                self.processing_odometry_msg.pose.pose.orientation.w
             )
             _, _, previous_theta = euler_from_quaternion(
                 self.last_odometry_msg.pose.pose.orientation.x,
@@ -89,20 +95,19 @@ class MonteCarloLocalizationNode:
                 self.last_odometry_msg.pose.pose.orientation.z,
                 self.last_odometry_msg.pose.pose.orientation.w
             )
-            print(current_theta)
             u  = [
                 current_x - previous_x,
                 current_y - previous_y,
                 current_theta - previous_theta,
-                current_theta
+                previous_theta
             ]
 
             # Run the odometry motion model to update the particles' positions
             self.particle_filter.motion_model_odometry(u, [0.2, 0.2, 0.1, 0.1])
-
-            if np.hypot(u[0], u[1]) > 0.02:
+            
+            if np.hypot(u[0], u[1]) > 0.1:
                 # Run the likelihood field algorithm
-                self.particle_filter.likelihood_field_algorithm(self.current_laser_scan)
+                self.particle_filter.likelihood_field_algorithm(self.processing_laser_msg)
 
                 # Resampling particles
                 self.particle_filter.resampler()
@@ -111,16 +116,16 @@ class MonteCarloLocalizationNode:
             self.visualizer.plot_odometry_reading(current_x, current_y, current_theta)
             
             # Plot the laser projection
-            self.visualizer.plot_laser_projection(self.current_laser_scan)
+            self.visualizer.plot_laser_projection(self.current_laser_msg)
 
-            # Update the visualizer
-            self.visualizer.update_particles(self.particle_filter)
+            # # Update the visualizer
+            self.visualizer.update_particles(self.map, self.particle_filter)
 
-        self.last_odometry_msg = self.current_odometry_msg
-        self.mutex.release()
+            self.last_odometry_msg = self.processing_odometry_msg
+        # print("End", timer)
 
 def main():
-    print("[Versão 1]")
+    print("[Versão 2]")
     MonteCarloLocalizationNode()
 
 if __name__ == '__main__':

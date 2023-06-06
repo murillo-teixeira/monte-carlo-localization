@@ -18,12 +18,13 @@ class ParticleSet(np.ndarray):
 
     def set_y_positions(self, new_positions):
         self[1, :] = new_positions
+    
+    def set_orientations(self, new_orientations):
+        self[2, :] = new_orientations
 
     def set_positions(self, new_positions):
         self[0:2, :] = new_positions
 
-    def set_orientations(self, new_orientations):
-        self[2, :] = new_orientations
 
     def set_weights(self, new_weights):
         self[3, :] = new_weights

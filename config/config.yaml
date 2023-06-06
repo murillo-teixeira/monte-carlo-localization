@@ -1,10 +1,10 @@
-node_frequency: 1.0
+node_frequency: 10.0
 map_roi_xmin: 0
 map_roi_xmax: 1940
 map_roi_ymin: 0
 map_roi_ymax: 1940
-zhit: 0.5
-zrand: 0.5
+zhit: 0.8
+zrand: 0.2
 x_sensor: 0
 y_sensor: 0
 sigma_squared: 70

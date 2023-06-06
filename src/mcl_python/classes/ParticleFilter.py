@@ -1,7 +1,8 @@
 import math
 import random
 import numpy as np
-from classes.Particle import Particle
+
+from classes.ParticleSet import ParticleSet
 from classes.Map import Map
 
 class ParticleFilter:
@@ -17,105 +18,86 @@ class ParticleFilter:
 
 
     def initialize_particles(self, number_of_particles = 50):
-        self.particles = []
-        for _ in range(number_of_particles):
-            is_position_valid = False
-            while not is_position_valid:
-                x = np.random.randint(0, self.map.roi_xmax)
-                y = np.random.randint(0, self.map.roi_ymax)
-                if self.map.map_matrix[y][x] == 1.0:
-                    is_position_valid = True
-                    x = x*self.map.resolution
-                    y = y*self.map.resolution
-                    theta = np.random.uniform(0, 2*np.pi)
+        # Initiating a ParticleSet object (a np.ndmatix)
+        self.particles = ParticleSet(number_of_particles)
 
-            self.particles.append(Particle(x, y, theta))
+        # Finding the valid positions to positions the particles
+        indices = np.argwhere(self.map.map_matrix == 1)
+        num_indices = indices.shape[0]
 
-    def reset_particle_weights(self):
-        for particle in self.particles:
-            particle.reset_weight()
+        # Calculate random positions from the valid ones
+        random_indices = np.random.choice(num_indices, size=number_of_particles)
+        
+        # Updating the positions
+        sampled_positions = indices[random_indices].T
+        sampled_positions[[1, 0], :] = sampled_positions[[0, 1], :]
+        self.particles.set_positions(sampled_positions*self.map.resolution)
+
+        # Calculating random orientations for the particles (0, 2*pi)
+        orientations = np.random.uniform(0, 2*np.pi, number_of_particles)
+        self.particles.set_orientations(orientations)
 
     def likelihood_field_algorithm(self, laser_msg):
-        # weights = []
-        # number_of_particles = len(self.particles)
-        # measurement_angles = np.tile(np.arange(laser_msg.angle_min, laser_msg.angle_max + laser_msg.angle_increment, laser_msg.angle_increment), (number_of_particles, 1))
-        # particles_x_array = np.array([particle.x for particle in self.particles]).reshape(1, number_of_particles)
-        # particles_y_array = np.array([particle.y for particle in self.particles]).reshape(1, number_of_particles)
-        # particles_theta_array = np.array([particle.theta for particle in self.particles]).reshape(1, number_of_particles)
-        # x_meas = particles_x_array.T + laser_msg.ranges*np.cos(measurement_angles + particles_theta_array.T)
-        # y_meas = particles_y_array.T + laser_msg.ranges*np.sin(measurement_angles + particles_theta_array.T)
-            
-        # valid_readings = np.tile(((np.array(laser_msg.ranges) > laser_msg.range_min) & (np.array(laser_msg.ranges) < laser_msg.range_max)), (number_of_particles, 1))
+        # Selecting only a subset of the readings
+        number_of_particles = self.particles.number_of_particles
+        subsampling_step = 20
+
+        measurement_angles = np.tile(np.arange(laser_msg.angle_min, laser_msg.angle_max + laser_msg.angle_increment, laser_msg.angle_increment)[0:-1:subsampling_step], (number_of_particles, 1))
+        measurement_ranges = np.array(laser_msg.ranges)[0:-1:subsampling_step]
+        valid_readings = ((np.array(laser_msg.ranges) > laser_msg.range_min) & (np.array(laser_msg.ranges) < laser_msg.range_max))[0:-1:subsampling_step]
+
+        measurement_ranges = np.compress(valid_readings, measurement_ranges)
+        measurement_angles = np.compress(valid_readings, measurement_angles, axis=1)
         
-        # x_meas_to_field = (x_meas[valid_readings]/self.map.resolution).astype(int)
-        # y_meas_to_field = (y_meas[valid_readings]/self.map.resolution).astype(int)
+        particles_x_array = self.particles.x_positions.reshape(1, number_of_particles)
+        particles_y_array = self.particles.y_positions.reshape(1, number_of_particles)
+        particles_theta_array = self.particles.orientations.reshape(1, number_of_particles)
 
-        # meas_likelihood = self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field)
-        # print(meas_likelihood.shape)
-        # weight = np.sum(self.zhit*meas_likelihood + self.zrand)
+        x_meas = particles_x_array.T + measurement_ranges*np.cos(measurement_angles + particles_theta_array.T)
+        y_meas = particles_y_array.T + measurement_ranges*np.sin(measurement_angles + particles_theta_array.T)
 
-        weights = []
-        measurement_angles = np.arange(laser_msg.angle_min, laser_msg.angle_max + laser_msg.angle_increment, laser_msg.angle_increment)
-        for particle in self.particles:
-            # The position (x, y) of the measurement of the particle was the robot
-            x_meas = particle.x + laser_msg.ranges*np.cos(measurement_angles + particle.theta)
-            y_meas = particle.y + laser_msg.ranges*np.sin(measurement_angles + particle.theta)
+        x_meas_to_field = (x_meas/self.map.resolution).astype(int)
+        y_meas_to_field = (y_meas/self.map.resolution).astype(int)
 
-            # To exclude invalid readings and prepare for lookup likelihood field
-            valid_readings = (np.array(laser_msg.ranges) > laser_msg.range_min) & (np.array(laser_msg.ranges) < laser_msg.range_max)
-            x_meas_to_field = (x_meas[valid_readings]/self.map.resolution).astype(int)
-            y_meas_to_field = (y_meas[valid_readings]/self.map.resolution).astype(int)
-            
-            # Calculating the weight
-            meas_likelihood = self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field)
-            weight = np.sum(self.zhit*meas_likelihood + self.zrand)
-            weights.append(weight)    
-        
-        weights_sum = np.sum(weights)
-        weights = np.array(weights)/weights_sum
-
-        for particle, weight in zip(self.particles, weights):
-            particle.weight = weight
-            print(particle.weight)
+        meas_likelihood = np.sum(self.zhit*self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field) + self.zrand, axis=1)
+        weights = meas_likelihood 
+        weights = weights/np.sum(weights)
+        self.particles.set_weights(weights)
+        print(weights)
 
     def motion_model_odometry(self, u, alpha):
-        new_particles = []
+        delta_rot1 = np.arctan2(u[1], u[0]) - u[3]
+        delta_trans = np.hypot(u[0], u[1])
+        delta_rot2 = u[2] - delta_rot1
+
+        delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
+        delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
+        delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
         
-        for particle in self.particles:
-            x = particle.x
-            y = particle.y
-            theta = particle.theta
-            
-            delta_rot1 = math.atan2(u[1], u[0]) - u[3]
-            delta_trans = math.sqrt((u[0])**2 + (u[1])**2)
-            delta_rot2 = u[2] - delta_rot1
-
-            delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
-            delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
-            delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
-
-            x_hat = x + delta_trans_hat * math.cos(theta + delta_rot1_hat)
-            y_hat = y + delta_trans_hat * math.sin(theta + delta_rot1_hat)
-            theta_hat = theta + delta_rot1_hat + delta_rot2_hat
-            
-            new_particles.append(Particle(x_hat, y_hat, theta_hat))
-
-        self.particles = new_particles
+        self.particles.update_attr()
+        self.particles.set_x_positions(self.particles.x_positions + delta_trans_hat * np.cos(self.particles.orientations + delta_rot1_hat))
+        self.particles.set_y_positions(self.particles.y_positions + delta_trans_hat * np.sin(self.particles.orientations + delta_rot1_hat))
+        self.particles.set_orientations(self.particles.orientations + delta_rot1_hat + delta_rot2_hat)
 
     def resampler(self):
-        number_of_particles = len(self.particles)
-        new_particles = []
-        r = random.uniform(0, 1/number_of_particles)
-    
-        i = 0
-        c = self.particles[0].weight
-        i = 1
-        
-        for m in range(number_of_particles):
-            u = r + (m)/number_of_particles
-            while (u > c) and (i < number_of_particles - 1):
-                i += 1
-                c += self.particles[i].weight
-            new_particles.append(self.particles[i])
+        self.particles.update_attr()
+        number_of_particles = self.particles.number_of_particles
+        weights = self.particles.weights
+        n_eff = 1/(np.sum(weights**2))
+        if n_eff < 0.9*number_of_particles:
+            print('resampling ', n_eff)
+            r = random.uniform(0, 1/number_of_particles)
+            previous_particles = self.particles.copy()
 
-        self.particles = new_particles
+            c = self.particles.weights[0]
+            i = 1
+            
+            for m in range(number_of_particles):
+                u = r + m/number_of_particles
+                while (u > c) and (i < number_of_particles - 1):
+                    i += 1
+                    c += self.particles.weights[i]
+                self.particles.set_particle(m, previous_particles.get_particle(i))
+        else:
+            print('not resampling ', n_eff)
+
