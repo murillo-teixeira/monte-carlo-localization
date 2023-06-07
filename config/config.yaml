@@ -1,8 +1,8 @@
 node_frequency: 10.0
-map_roi_xmin: 0
-map_roi_xmax: 1940
-map_roi_ymin: 0
-map_roi_ymax: 1940
+map_roi_xmin: 550
+map_roi_xmax: 1100
+map_roi_ymin: 680
+map_roi_ymax: 1250
 zhit: 0.8
 zrand: 0.2
 x_sensor: 0

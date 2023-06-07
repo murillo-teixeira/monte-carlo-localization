@@ -80,7 +80,7 @@ class Visualizer:
     def plot_likelihood_field(self, map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')
         self.laser_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
-        self.laser_subplot.axis(ymin=map.roi_ymax,ymax=map.roi_ymin)
+        self.laser_subplot.axis(ymin=map.roi_ymin,ymax=map.roi_ymax)
     
     def plot_laser_projection(self, laser_msg):
         if self.plot_counter % 5 == 0:

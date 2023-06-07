@@ -40,7 +40,7 @@ class ParticleFilter:
     def likelihood_field_algorithm(self, laser_msg):
         # Selecting only a subset of the readings
         number_of_particles = self.particles.number_of_particles
-        subsampling_step = 20
+        subsampling_step = 10
 
         measurement_angles = np.tile(np.arange(laser_msg.angle_min, laser_msg.angle_max + laser_msg.angle_increment, laser_msg.angle_increment)[0:-1:subsampling_step], (number_of_particles, 1))
         measurement_ranges = np.array(laser_msg.ranges)[0:-1:subsampling_step]
@@ -61,9 +61,8 @@ class ParticleFilter:
 
         meas_likelihood = np.sum(self.zhit*self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field) + self.zrand, axis=1)
         weights = meas_likelihood 
-        weights = weights/np.sum(weights)
+        # weights = weights/np.sum(weights)
         self.particles.set_weights(weights)
-        print(weights)
 
     def motion_model_odometry(self, u, alpha):
         delta_rot1 = np.arctan2(u[1], u[0]) - u[3]
@@ -83,8 +82,10 @@ class ParticleFilter:
         self.particles.update_attr()
         number_of_particles = self.particles.number_of_particles
         weights = self.particles.weights
+        new_particles = ParticleSet(number_of_particles)
+
         n_eff = 1/(np.sum(weights**2))
-        if n_eff < 0.9*number_of_particles:
+        if n_eff < 0.95*number_of_particles:
             print('resampling ', n_eff)
             r = random.uniform(0, 1/number_of_particles)
             previous_particles = self.particles.copy()
@@ -97,7 +98,39 @@ class ParticleFilter:
                 while (u > c) and (i < number_of_particles - 1):
                     i += 1
                     c += self.particles.weights[i]
-                self.particles.set_particle(m, previous_particles.get_particle(i))
+                # print(self.particles)
+                # print(previous_particles.get_particle(i))
+                new_particles.set_particle(m, previous_particles.get_particle(i))
+                # print(new_particles)
+            self.particles = new_particles
         else:
             print('not resampling ', n_eff)
 
+    def remove_outside_map_particles(self):
+        self.particles.update_attr()
+        number_of_particles = self.particles.number_of_particles
+        particles_x_array = self.particles.x_positions.reshape(1, number_of_particles)
+        particles_y_array = self.particles.y_positions.reshape(1, number_of_particles)
+        particles_x_array_to_field = (particles_x_array/self.map.resolution).astype(int)
+        particles_y_array_to_field = (particles_y_array/self.map.resolution).astype(int)
+        print('particles inside:', np.sum((self.map.map_matrix[particles_y_array_to_field,particles_x_array_to_field] == 1)))
+        is_particle_inside_map = (self.map.map_matrix[particles_y_array_to_field,particles_x_array_to_field] == 1)
+        weights = self.particles.weights*is_particle_inside_map
+        self.particles.set_weights(weights)
+
+    
+    def normalize_weights(self):
+        self.particles.update_attr()
+        weights = self.particles.weights
+        if np.sum(weights) != 0:
+            weights = weights/np.sum(weights)
+        self.particles.set_weights(weights)
+
+    def get_n_eff(self):
+        self.particles.update_attr()
+        number_of_particles = self.particles.number_of_particles
+        weights = self.particles.weights
+        n_eff = number_of_particles
+        if np.sum(weights) != 0:
+            n_eff = 1/(np.sum(weights**2))
+        return n_eff, number_of_particles

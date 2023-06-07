@@ -37,6 +37,7 @@ class MonteCarloLocalizationNode:
         self.current_odometry_msg = None
         self.current_laser_msg = None
         self.mutex = Lock()
+
         self.initialize_subscribers()
 
         self.initialize_timer()
@@ -106,11 +107,20 @@ class MonteCarloLocalizationNode:
             self.particle_filter.motion_model_odometry(u, [0.2, 0.2, 0.1, 0.1])
             
             if np.hypot(u[0], u[1]) > 0.1:
+                print("calculo dos pesos")
+
                 # Run the likelihood field algorithm
                 self.particle_filter.likelihood_field_algorithm(self.processing_laser_msg)
 
-                # Resampling particles
-                self.particle_filter.resampler()
+                # Deal with particles outside the map
+                self.particle_filter.remove_outside_map_particles()
+
+                n_eff, number_of_particles = self.particle_filter.get_n_eff()
+                if n_eff < 0.95*number_of_particles:
+                    # Normalizing weights for the chosen resampler
+                    self.particle_filter.normalize_weights()
+                    # Resampling particles
+                    self.particle_filter.resampler()
 
             # Plot odometry reading
             self.visualizer.plot_odometry_reading(current_x, current_y, current_theta)
@@ -125,7 +135,6 @@ class MonteCarloLocalizationNode:
         # print("End", timer)
 
 def main():
-    print("[Versão 2]")
     MonteCarloLocalizationNode()
 
 if __name__ == '__main__':
