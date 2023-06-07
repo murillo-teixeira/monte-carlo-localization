@@ -83,28 +83,20 @@ class ParticleFilter:
         number_of_particles = self.particles.number_of_particles
         weights = self.particles.weights
         new_particles = ParticleSet(number_of_particles)
+        print('normalizing weights', np.sum(weights))
+        r = random.uniform(0, 1/number_of_particles)
+        previous_particles = self.particles.copy()
 
-        n_eff = 1/(np.sum(weights**2))
-        if n_eff < 0.95*number_of_particles:
-            print('resampling ', n_eff)
-            r = random.uniform(0, 1/number_of_particles)
-            previous_particles = self.particles.copy()
-
-            c = self.particles.weights[0]
-            i = 1
-            
-            for m in range(number_of_particles):
-                u = r + m/number_of_particles
-                while (u > c) and (i < number_of_particles - 1):
-                    i += 1
-                    c += self.particles.weights[i]
-                # print(self.particles)
-                # print(previous_particles.get_particle(i))
-                new_particles.set_particle(m, previous_particles.get_particle(i))
-                # print(new_particles)
-            self.particles = new_particles
-        else:
-            print('not resampling ', n_eff)
+        c = self.particles.weights[0]
+        i = 1
+        
+        for m in range(1, number_of_particles):
+            u = r + (m-1)/number_of_particles
+            while (u > c):
+                c += self.particles.weights[i]
+                i += 1
+            new_particles.set_particle(m-1, previous_particles.get_particle(i))
+        self.particles = new_particles
 
     def remove_outside_map_particles(self):
         self.particles.update_attr()

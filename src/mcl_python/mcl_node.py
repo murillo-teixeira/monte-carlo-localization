@@ -96,6 +96,7 @@ class MonteCarloLocalizationNode:
                 self.last_odometry_msg.pose.pose.orientation.z,
                 self.last_odometry_msg.pose.pose.orientation.w
             )
+
             u  = [
                 current_x - previous_x,
                 current_y - previous_y,
@@ -104,10 +105,9 @@ class MonteCarloLocalizationNode:
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.2, 0.2, 0.1, 0.1])
+            self.particle_filter.motion_model_odometry(u, [0.4, 0.4, 0.2, 0.2])
             
             if np.hypot(u[0], u[1]) > 0.1:
-                print("calculo dos pesos")
 
                 # Run the likelihood field algorithm
                 self.particle_filter.likelihood_field_algorithm(self.processing_laser_msg)
@@ -116,9 +116,10 @@ class MonteCarloLocalizationNode:
                 self.particle_filter.remove_outside_map_particles()
 
                 n_eff, number_of_particles = self.particle_filter.get_n_eff()
-                if n_eff < 0.95*number_of_particles:
+                if n_eff < 0.8*number_of_particles:
                     # Normalizing weights for the chosen resampler
                     self.particle_filter.normalize_weights()
+                
                     # Resampling particles
                     self.particle_filter.resampler()
 
