@@ -17,7 +17,7 @@ class ParticleFilter:
         self.zrand = zrand
 
 
-    def initialize_particles(self, number_of_particles = 50):
+    def initialize_particles(self, number_of_particles):
         # Initiating a ParticleSet object (a np.ndmatix)
         self.particles = ParticleSet(number_of_particles)
 

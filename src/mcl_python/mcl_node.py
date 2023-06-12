@@ -26,7 +26,7 @@ class MonteCarloLocalizationNode:
         self.map = Map(self.map_file, self.map_roi)
     
         self.particle_filter = ParticleFilter(self.map, self.zhit, self.zrand, self.x_sensor, self.y_sensor)
-        self.particle_filter.initialize_particles(1000)
+        self.particle_filter.initialize_particles(5000)
 
         self.visualizer = Visualizer()
         self.visualizer.plot_particles(self.map, self.particle_filter)
@@ -105,7 +105,7 @@ class MonteCarloLocalizationNode:
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.4, 0.4, 0.2, 0.2])
+            self.particle_filter.motion_model_odometry(u, [0.1, 0.1, 0.1, 0.1])
             
             if np.hypot(u[0], u[1]) > 0.1:
 

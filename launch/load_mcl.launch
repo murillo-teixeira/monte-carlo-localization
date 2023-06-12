@@ -13,11 +13,11 @@
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 map odom"/>
     
     <!-- Run map server to publish the map -->
-    <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/map5.yaml" />
+    <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/map5_mgimp.yaml" />
     
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">
-        <param name="map_file" value="$(arg map_location)/map5.pgm" />
+        <param name="map_file" value="$(arg map_location)/map5_mgimp.pgm" />
     </node>
 
     <!-- Play your bag (change the directory of your bag) -->
