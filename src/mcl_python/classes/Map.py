@@ -3,13 +3,14 @@ import matplotlib.pyplot as plt
 import scipy.ndimage
 
 class Map:
-    def __init__(self, map_file, map_roi):
+    def __init__(self, map_file, map_roi, likelihood_field_variance):
         self.roi_xmin, self.roi_xmax, self.roi_ymin, self.roi_ymax = map_roi
         self.map_matrix = None
         self.likelihood_field = None
         self.resolution = None
+        self.likelihood_field_variance = likelihood_field_variance
         self.load_map(map_file)
-        self.create_likelihood_field(35)
+        self.create_likelihood_field(self.likelihood_field_variance)
 
     def load_map(self, map_file):
         with open(map_file, 'rb') as f:
@@ -20,6 +21,7 @@ class Map:
             print("RESOLUTION: ", self.resolution)
             # print('unique: ', np.unique(map_array))
             self.map_matrix = np.array(map_array, dtype=float).reshape(self.height, self.width)
+            self.map_matrix = np.flip(self.map_matrix, axis=1)
             self.map_matrix[self.map_matrix==205] = 0.5
             self.map_matrix[self.map_matrix==0] = 0.0
             self.map_matrix[self.map_matrix==254] = 1.0

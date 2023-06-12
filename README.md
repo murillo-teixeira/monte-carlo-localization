@@ -66,3 +66,7 @@ roslaunch mcl_python load_mcl.launch
     2. Criar e testar o Likelihood Field Algorithm
     3. Criar e testar o Low Variance Sampler
     4. Integrar os algoritmos implementados na estrutura pré-definida
+
+Ideias:
+    - Inicializar as partículas perto do local esperado
+    - Ler melhor o mapa (ler .png)

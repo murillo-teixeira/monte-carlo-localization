@@ -5,7 +5,7 @@
     <rosparam file="$(find mcl_python)/config/config.yaml" />
     
     <arg name="map_location" default="$(find mcl_python)/map" />
-    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5thfloor.bag" />
+    <arg name="bag_location" default="$(find mcl_python)/bagfiles/elevator.bag" />
     <!-- Publish the transform that is missing in the pioneer -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="" args="0 0 0 0 0 0 1 base_link laser" />
     
@@ -13,15 +13,15 @@
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 map odom"/>
     
     <!-- Run map server to publish the map -->
-    <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/map5_mgimp.yaml" />
+    <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/elevator_corridor.yaml" />
     
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">
-        <param name="map_file" value="$(arg map_location)/map5_mgimp.pgm" />
+        <param name="map_file" value="$(arg map_location)/elevator_corridor.pgm" />
     </node>
 
     <!-- Play your bag (change the directory of your bag) -->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 2 --clock $(arg bag_location)"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 4 --clock $(arg bag_location)"/>
 
     <!-- Launch rviz to show the map -->
     <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find mcl_python)/rviz/mapping.rviz" /> -->

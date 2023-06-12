@@ -23,10 +23,10 @@ class MonteCarloLocalizationNode:
 
         self.load_parameters()
 
-        self.map = Map(self.map_file, self.map_roi)
+        self.map = Map(self.map_file, self.map_roi, self.likelihood_field_variance)
     
         self.particle_filter = ParticleFilter(self.map, self.zhit, self.zrand, self.x_sensor, self.y_sensor)
-        self.particle_filter.initialize_particles(5000)
+        self.particle_filter.initialize_particles(20000)
 
         self.visualizer = Visualizer()
         self.visualizer.plot_particles(self.map, self.particle_filter)
@@ -48,13 +48,14 @@ class MonteCarloLocalizationNode:
         self.map_file = rospy.get_param("~map_file")
         self.map_roi = [
             rospy.get_param("map_roi_xmin", 0),
-            rospy.get_param("map_roi_xmax", 0),
+            rospy.get_param("map_roi_xmax", 1984),
             rospy.get_param("map_roi_ymin", 0),
-            rospy.get_param("map_roi_ymax", 0)
+            rospy.get_param("map_roi_ymax", 1984)
         ]
         self.node_frequency = rospy.get_param("node_frequency", 1)
         self.zhit = rospy.get_param("zhit", 0.7)
         self.zrand = rospy.get_param("zrand", 0.3)
+        self.likelihood_field_variance = rospy.get_param("sigma_squared", 0)
         self.x_sensor = rospy.get_param("x_sensor", 0)
         self.y_sensor = rospy.get_param("y_sensor", 0)
 
@@ -72,7 +73,6 @@ class MonteCarloLocalizationNode:
         self.current_laser_msg = msg
 
     def timer_callback(self, timer):
-        # print("Start", timer)
         if not self.last_odometry_msg:
             self.last_odometry_msg = self.current_odometry_msg
         else:
@@ -105,7 +105,7 @@ class MonteCarloLocalizationNode:
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.1, 0.1, 0.1, 0.1])
+            self.particle_filter.motion_model_odometry(u, [0.0, 0.0, 0.0, 0.0])
             
             if np.hypot(u[0], u[1]) > 0.1:
 
@@ -114,12 +114,16 @@ class MonteCarloLocalizationNode:
 
                 # Deal with particles outside the map
                 self.particle_filter.remove_outside_map_particles()
+                
+                # Normalizing weights for the chosen resampler
+                self.particle_filter.normalize_weights()
+                
+                print(self.particle_filter.particles.weights)
 
                 n_eff, number_of_particles = self.particle_filter.get_n_eff()
-                if n_eff < 0.8*number_of_particles:
-                    # Normalizing weights for the chosen resampler
-                    self.particle_filter.normalize_weights()
-                
+                print('resampling?', n_eff/number_of_particles)
+
+                if n_eff < 0.5*number_of_particles:
                     # Resampling particles
                     self.particle_filter.resampler()
 
@@ -136,6 +140,7 @@ class MonteCarloLocalizationNode:
         # print("End", timer)
 
 def main():
+    print("[Versão 2]")
     MonteCarloLocalizationNode()
 
 if __name__ == '__main__':

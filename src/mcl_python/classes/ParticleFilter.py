@@ -61,7 +61,6 @@ class ParticleFilter:
 
         meas_likelihood = np.sum(self.zhit*self.map.get_meas_likelihood(x_meas_to_field, y_meas_to_field) + self.zrand, axis=1)
         weights = meas_likelihood 
-        # weights = weights/np.sum(weights)
         self.particles.set_weights(weights)
 
     def motion_model_odometry(self, u, alpha):
@@ -83,18 +82,17 @@ class ParticleFilter:
         number_of_particles = self.particles.number_of_particles
         weights = self.particles.weights
         new_particles = ParticleSet(number_of_particles)
-        print('normalizing weights', np.sum(weights))
         r = random.uniform(0, 1/number_of_particles)
         previous_particles = self.particles.copy()
 
         c = self.particles.weights[0]
-        i = 1
+        i = 0
         
         for m in range(1, number_of_particles):
             u = r + (m-1)/number_of_particles
             while (u > c):
-                c += self.particles.weights[i]
                 i += 1
+                c += self.particles.weights[i]
             new_particles.set_particle(m-1, previous_particles.get_particle(i))
         self.particles = new_particles
 
@@ -105,8 +103,8 @@ class ParticleFilter:
         particles_y_array = self.particles.y_positions.reshape(1, number_of_particles)
         particles_x_array_to_field = (particles_x_array/self.map.resolution).astype(int)
         particles_y_array_to_field = (particles_y_array/self.map.resolution).astype(int)
-        print('particles inside:', np.sum((self.map.map_matrix[particles_y_array_to_field,particles_x_array_to_field] == 1)))
         is_particle_inside_map = (self.map.map_matrix[particles_y_array_to_field,particles_x_array_to_field] == 1)
+        # is_particle_inside_map[is_particle_inside_map == 0] = 1/10
         weights = self.particles.weights*is_particle_inside_map
         self.particles.set_weights(weights)
 
@@ -119,6 +117,7 @@ class ParticleFilter:
         self.particles.set_weights(weights)
 
     def get_n_eff(self):
+        
         self.particles.update_attr()
         number_of_particles = self.particles.number_of_particles
         weights = self.particles.weights
