@@ -25,7 +25,6 @@ class ParticleSet(np.ndarray):
     def set_positions(self, new_positions):
         self[0:2, :] = new_positions
 
-
     def set_weights(self, new_weights):
         self[3, :] = new_weights
 

@@ -1,5 +1,4 @@
 import numpy as np
-import matplotlib.pyplot as plt
 import scipy.ndimage
 
 class Map:
@@ -18,8 +17,6 @@ class Map:
             self.width, self.height = np.array(lines[2].split(), dtype=int)
             map_array = np.array([el for el in lines[4]], dtype=np.int16)
             self.resolution = float(lines[1].split()[3])
-            print("RESOLUTION: ", self.resolution)
-            # print('unique: ', np.unique(map_array))
             self.map_matrix = np.array(map_array, dtype=float).reshape(self.height, self.width)
             self.map_matrix = np.flip(self.map_matrix, axis=1)
             self.map_matrix[self.map_matrix==205] = 0.5
@@ -32,5 +29,4 @@ class Map:
         self.likelihood_field = np.exp(-0.5 * (squared_distances / sigma_squared))
 
     def get_meas_likelihood(self, x_meas, y_meas):
-        # return self.likelihood_field[int(y_meas/0.05), int(x_meas/0.05)]
         return self.likelihood_field[y_meas, x_meas]

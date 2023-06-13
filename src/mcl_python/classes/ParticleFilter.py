@@ -36,8 +36,7 @@ class ParticleFilter:
         sampled_positions[[1, 0], :] = sampled_positions[[0, 1], :]
         self.particles.set_positions(sampled_positions*self.map.resolution)
 
-        # Calculating random orientations for the particles (0, 2*pi)
-        
+        # Calculating random orientations for the particles
         orientations = np.random.normal(initial_theta, initial_theta_sd, number_of_particles)
         self.particles.set_orientations(orientations)
 
@@ -130,7 +129,6 @@ class ParticleFilter:
         weights = self.particles.weights*is_particle_inside_map
         self.particles.set_weights(weights)
 
-    
     def normalize_weights(self):
         self.particles.update_attr()
         weights = self.particles.weights

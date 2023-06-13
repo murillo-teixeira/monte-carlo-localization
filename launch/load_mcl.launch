@@ -5,8 +5,9 @@
     <rosparam file="$(find mcl_python)/config/config.yaml" />
     
     <arg name="map_location" default="$(find mcl_python)/map" />
-    <arg name="map_name" default="map5" />
-    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5thfloor.bag" />
+    <arg name="map_name" default="elevator_corridor" />
+    <arg name="bag_location" default="$(find mcl_python)/bagfiles/elevator_amcl.bag" />
+    
     <!-- Publish the transform that is missing in the pioneer -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="" args="0 0 0 0 0 0 1 base_link laser" />
     
@@ -16,15 +17,34 @@
     <!-- Run map server to publish the map -->
     <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/$(arg map_name).yaml" />
     
+    <!-- Launch rviz to show the map -->
+    <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find mcl_python)/rviz/mapping.rviz" /> -->
+        
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">
         <param name="map_file" value="$(arg map_location)/$(arg map_name).pgm" />
     </node>
 
     <!-- Play your bag (change the directory of your bag) -->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 4 --clock $(arg bag_location)"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 2 --clock $(arg bag_location)"/>
+    
+    <!-- If you know where your robot starts in the map, then change these values, such that amcl converges faster -->
+    <!-- <arg name="initial_x" default="0.0" />
+    <arg name="initial_y" default="0.0" />
+    <arg name="initial_orientation" default="0.0" />
+     -->
+    <!-- Load AMCL for obtaining a good localization of the robot -->
+    <!-- <node pkg="amcl" type="amcl" name="amcl" output="screen">
+      <param name="odom_frame_id" value="odom"/>
+      <param name="odom_model_type" value="diff-corrected"/>
+      <param name="base_frame_id" value="base_link"/>
+      <param name="update_min_d" value="0.1"/>
+      <param name="update_min_a" value="0.2"/>
+      <param name="min_particles" value="500"/>
+      <param name="max_particles" value="5000"/>
+      <param name="initial_pose_x" value="$(arg initial_x)"/>
+      <param name="initial_pose_y" value="$(arg initial_y)"/>
+      <param name="initial_pose_a" value="$(arg initial_orientation)" />
+    </node> -->
 
-    <!-- Launch rviz to show the map -->
-    <!-- <node type="rviz" name="rviz" pkg="rviz" args="-d $(find mcl_python)/rviz/mapping.rviz" /> -->
-        
 </launch>

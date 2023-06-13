@@ -1,30 +1,35 @@
-node_frequency: 1.0
+node_frequency: 5.0
 number_of_particles: 1000
-zhit: 0.8
-zrand: 0.2
+zhit: 10
+zrand: 1
 x_sensor: 0
 y_sensor: 0
 sigma_squared: 10
 
 # Type of localization (1 for global; 0 for local)
-global_localization: 0
+global_localization: 1
+
+# Plot with matplotlib
+plt_on: 1
 
 # 5th floor values
-initial_pos_y: 1340
-initial_pos_x: 1000
-initial_pos_sd: 200
-initial_theta: 4.5
-initial_theta_sd: 1
-map_roi_xmin: 890
-map_roi_xmax: 1400
-map_roi_ymin: 730
-map_roi_ymax: 1160
+# initial_pos_y: 1340
+# initial_pos_x: 1000
+# initial_pos_sd: 200
+# initial_theta: 4.5
+# initial_theta_sd: 0.25
+# map_roi_xmin: 890
+# map_roi_xmax: 1400
+# map_roi_ymin: 730
+# map_roi_ymax: 1160
 
 # Elevator values
-# initial_pos_sd: 100
-# initial_pos_x: 992
-# initial_pos_y: 992
-# map_roi_xmin: 900
-# map_roi_xmax: 1500
-# map_roi_ymin: 680
-# map_roi_ymax: 1300
+initial_pos_sd: 100
+initial_pos_x: 992
+initial_pos_y: 992
+initial_theta: 3.4
+initial_theta_sd: 0.25
+map_roi_xmin: 760
+map_roi_xmax: 1050
+map_roi_ymin: 784
+map_roi_ymax: 1090
