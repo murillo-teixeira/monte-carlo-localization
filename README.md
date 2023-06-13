@@ -68,5 +68,22 @@ roslaunch mcl_python load_mcl.launch
     4. Integrar os algoritmos implementados na estrutura pré-definida
 
 Ideias:
-    - Inicializar as partículas perto do local esperado
-    - Ler melhor o mapa (ler .png)
+    <!-- 1. Inicializar as partículas perto do local esperado -->
+    <!-- 2. Ler melhor o mapa (ler .png) -->
+    - Procurar melhores resultados com outras bags
+    - 
+
+Relatório:
+    - Introdução: Mauro
+    - Métodos e algoritmos: Mauro & Afonso
+    
+    - Implementação
+        - Estrutura geral das classes e do nó
+        - Implementação dos algoritmos (incluir as imagens das microsimulações)
+        - Implementação conjunta na estrutura de classes
+    
+    - Resultados experimentais
+        - Evolução das escolhas de parâmetros e os resultados
+        - O nosso baseline é o AMCL
+
+    - Conclusão: Afonso

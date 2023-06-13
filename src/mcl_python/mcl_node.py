@@ -121,6 +121,7 @@ class MonteCarloLocalizationNode:
                 print(self.particle_filter.particles.weights)
 
                 n_eff, number_of_particles = self.particle_filter.get_n_eff()
+                
                 print('resampling?', n_eff/number_of_particles)
 
                 if n_eff < 0.5*number_of_particles:

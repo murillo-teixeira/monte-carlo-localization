@@ -5,7 +5,8 @@
     <rosparam file="$(find mcl_python)/config/config.yaml" />
     
     <arg name="map_location" default="$(find mcl_python)/map" />
-    <arg name="bag_location" default="$(find mcl_python)/bagfiles/elevator.bag" />
+    <arg name="map_name" default="map5" />
+    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5thfloor.bag" />
     <!-- Publish the transform that is missing in the pioneer -->
     <node pkg="tf2_ros" type="static_transform_publisher" name="" args="0 0 0 0 0 0 1 base_link laser" />
     
@@ -13,11 +14,11 @@
     <node pkg="tf2_ros" type="static_transform_publisher" name="map_odom_broadcaster" args="0 0 0 0 0 0 map odom"/>
     
     <!-- Run map server to publish the map -->
-    <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/elevator_corridor.yaml" />
+    <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/$(arg map_name).yaml" />
     
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">
-        <param name="map_file" value="$(arg map_location)/elevator_corridor.pgm" />
+        <param name="map_file" value="$(arg map_location)/$(arg map_name).pgm" />
     </node>
 
     <!-- Play your bag (change the directory of your bag) -->
