@@ -1,6 +1,5 @@
-import math
-import random
 import numpy as np
+from scipy.stats import multivariate_normal
 
 from classes.ParticleSet import ParticleSet
 from classes.Map import Map
@@ -16,8 +15,33 @@ class ParticleFilter:
         self.zhit  = zhit
         self.zrand = zrand
 
+    def initialize_particles_locally(self, number_of_particles, initial_pos_x, initial_pos_y, initial_pos_sd, initial_theta, initial_theta_sd):
+        # Initiating a ParticleSet object (a np.ndmatix)
+        self.particles = ParticleSet(number_of_particles)
 
-    def initialize_particles(self, number_of_particles):
+        # Finding the valid positions to positions the particles
+        indices = np.argwhere(self.map.map_matrix == 1)
+        num_indices = indices.shape[0]
+
+        # Initialize the particles following a normal distribution around the initial position
+        rv = multivariate_normal([initial_pos_x, initial_pos_y], [[initial_pos_sd, 0], [0, initial_pos_sd]])
+        normal_dist = rv.pdf(indices)
+        normal_dist = normal_dist/sum(normal_dist)
+
+        # Calculate random positions from the valid ones
+        random_indices = np.random.choice(num_indices, size=number_of_particles, p=normal_dist)
+       
+        # Updating the positions
+        sampled_positions = indices[random_indices].T
+        sampled_positions[[1, 0], :] = sampled_positions[[0, 1], :]
+        self.particles.set_positions(sampled_positions*self.map.resolution)
+
+        # Calculating random orientations for the particles (0, 2*pi)
+        
+        orientations = np.random.normal(initial_theta, initial_theta_sd, number_of_particles)
+        self.particles.set_orientations(orientations)
+
+    def initialize_particles_globally(self, number_of_particles):
         # Initiating a ParticleSet object (a np.ndmatix)
         self.particles = ParticleSet(number_of_particles)
 
@@ -68,9 +92,9 @@ class ParticleFilter:
         delta_trans = np.hypot(u[0], u[1])
         delta_rot2 = u[2] - delta_rot1
 
-        delta_rot1_hat = delta_rot1 - random.gauss(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans)
-        delta_trans_hat = delta_trans - random.gauss(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)))
-        delta_rot2_hat = delta_rot2 - random.gauss(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans)
+        delta_rot1_hat = delta_rot1 - np.random.normal(0, alpha[0]*abs(delta_rot1) + alpha[1]*delta_trans, self.particles.number_of_particles)
+        delta_trans_hat = delta_trans - np.random.normal(0, alpha[2]*delta_trans + alpha[3]*(abs(delta_rot1) + abs(delta_rot2)), self.particles.number_of_particles)
+        delta_rot2_hat = delta_rot2 - np.random.normal(0, alpha[0]*abs(delta_rot2) + alpha[1]*delta_trans, self.particles.number_of_particles)
         
         self.particles.update_attr()
         self.particles.set_x_positions(self.particles.x_positions + delta_trans_hat * np.cos(self.particles.orientations + delta_rot1_hat))
@@ -80,9 +104,8 @@ class ParticleFilter:
     def resampler(self):
         self.particles.update_attr()
         number_of_particles = self.particles.number_of_particles
-        weights = self.particles.weights
         new_particles = ParticleSet(number_of_particles)
-        r = random.uniform(0, 1/number_of_particles)
+        r = np.random.uniform(0, 1/number_of_particles)
         previous_particles = self.particles.copy()
 
         c = self.particles.weights[0]
@@ -104,7 +127,6 @@ class ParticleFilter:
         particles_x_array_to_field = (particles_x_array/self.map.resolution).astype(int)
         particles_y_array_to_field = (particles_y_array/self.map.resolution).astype(int)
         is_particle_inside_map = (self.map.map_matrix[particles_y_array_to_field,particles_x_array_to_field] == 1)
-        # is_particle_inside_map[is_particle_inside_map == 0] = 1/10
         weights = self.particles.weights*is_particle_inside_map
         self.particles.set_weights(weights)
 
@@ -117,7 +139,6 @@ class ParticleFilter:
         self.particles.set_weights(weights)
 
     def get_n_eff(self):
-        
         self.particles.update_attr()
         number_of_particles = self.particles.number_of_particles
         weights = self.particles.weights

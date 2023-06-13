@@ -53,7 +53,6 @@ class Visualizer:
         self.map_subplot.axis(ymin=map.roi_ymin,ymax=map.roi_ymax)
 
     def plot_particles(self, map : Map, particle_filter : ParticleFilter):
-        print("plotting particles")
         self.plot_map(map)
         particle_filter.particles.update_attr()
         self.particle_set = self.map_subplot.quiver(

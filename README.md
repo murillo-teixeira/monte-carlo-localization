@@ -78,12 +78,21 @@ Relatório:
     - Métodos e algoritmos: Mauro & Afonso
     
     - Implementação
-        - Estrutura geral das classes e do nó
+        - Estrutura geral das classes e do nó: Murillo
         - Implementação dos algoritmos (incluir as imagens das microsimulações)
-        - Implementação conjunta na estrutura de classes
+            - Motion: Pedro
+            - Measure: Murillo
+            - Resampling: Pedro
+        - Implementação conjunta na estrutura de classes: Murillo
     
     - Resultados experimentais
-        - Evolução das escolhas de parâmetros e os resultados
-        - O nosso baseline é o AMCL
+        - Evolução das escolhas de parâmetros e os resultados: Pedro
+        - Localização local e comparação com o AMCL: Murillo
+            - Deixar os dois no RViz
+            - Arrumar alguma forma de comparar os resultados
+
+        - Global localization
+            - Tentar fazer no AMCL para comparar com o nosso: Pedro
+            - Mostrar o nosso global localization com o programa: Murillo
 
     - Conclusão: Afonso

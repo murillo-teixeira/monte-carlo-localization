@@ -26,8 +26,13 @@ class MonteCarloLocalizationNode:
         self.map = Map(self.map_file, self.map_roi, self.likelihood_field_variance)
     
         self.particle_filter = ParticleFilter(self.map, self.zhit, self.zrand, self.x_sensor, self.y_sensor)
-        self.particle_filter.initialize_particles(20000)
-
+        
+        # Initialize particles (locally or globally)
+        if self.global_localization:
+            self.particle_filter.initialize_particles_globally(self.number_of_particles)
+        else:
+            self.particle_filter.initialize_particles_locally(self.number_of_particles, self.initial_pos_x, self.initial_pos_y, self.initial_pos_sd, self.initial_theta, self.initial_theta_sd)
+        
         self.visualizer = Visualizer()
         self.visualizer.plot_particles(self.map, self.particle_filter)
         self.visualizer.plot_likelihood_field(self.map)
@@ -53,11 +58,25 @@ class MonteCarloLocalizationNode:
             rospy.get_param("map_roi_ymax", 1984)
         ]
         self.node_frequency = rospy.get_param("node_frequency", 1)
+        self.number_of_particles = rospy.get_param("number_of_particles", 100)
+
         self.zhit = rospy.get_param("zhit", 0.7)
         self.zrand = rospy.get_param("zrand", 0.3)
         self.likelihood_field_variance = rospy.get_param("sigma_squared", 0)
+        
+        # Relative position of the LIDAR
         self.x_sensor = rospy.get_param("x_sensor", 0)
         self.y_sensor = rospy.get_param("y_sensor", 0)
+        
+        self.global_localization = rospy.get_param("global_localization", 1)
+        
+        if self.global_localization == 0:
+            self.initial_pos_x = rospy.get_param("initial_pos_x", 992)
+            self.initial_pos_y = rospy.get_param("initial_pos_y", 992)
+            self.initial_pos_sd = rospy.get_param("initial_pos_sd", 10000000)
+            self.initial_theta = rospy.get_param("initial_theta", 0)
+            self.initial_theta_sd = rospy.get_param("initial_theta_sd", 100)
+
 
     def initialize_timer(self):
         self.timer = rospy.Timer(rospy.Duration(1.0 / self.node_frequency), self.timer_callback) 
@@ -105,7 +124,7 @@ class MonteCarloLocalizationNode:
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.0, 0.0, 0.0, 0.0])
+            self.particle_filter.motion_model_odometry(u, [0.05, 0.05, 0.05, 0.05])
             
             if np.hypot(u[0], u[1]) > 0.1:
 
@@ -117,14 +136,10 @@ class MonteCarloLocalizationNode:
                 
                 # Normalizing weights for the chosen resampler
                 self.particle_filter.normalize_weights()
-                
-                print(self.particle_filter.particles.weights)
 
                 n_eff, number_of_particles = self.particle_filter.get_n_eff()
                 
-                print('resampling?', n_eff/number_of_particles)
-
-                if n_eff < 0.5*number_of_particles:
+                if n_eff < 0.7*number_of_particles:
                     # Resampling particles
                     self.particle_filter.resampler()
 

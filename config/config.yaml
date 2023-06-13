@@ -1,14 +1,30 @@
 node_frequency: 1.0
-# map_roi_xmin: 900
-# map_roi_xmax: 1500
-# map_roi_ymin: 680
-# map_roi_ymax: 1300
-initializing_roi_xmin: 0
-initializing_roi_xmax: 0
-initializing_roi_xmin: 0
-initializing_roi_xmin: 0
+number_of_particles: 1000
 zhit: 0.8
 zrand: 0.2
 x_sensor: 0
 y_sensor: 0
 sigma_squared: 10
+
+# Type of localization (1 for global; 0 for local)
+global_localization: 0
+
+# 5th floor values
+initial_pos_y: 1340
+initial_pos_x: 1000
+initial_pos_sd: 200
+initial_theta: 4.5
+initial_theta_sd: 1
+map_roi_xmin: 890
+map_roi_xmax: 1400
+map_roi_ymin: 730
+map_roi_ymax: 1160
+
+# Elevator values
+# initial_pos_sd: 100
+# initial_pos_x: 992
+# initial_pos_y: 992
+# map_roi_xmin: 900
+# map_roi_xmax: 1500
+# map_roi_ymin: 680
+# map_roi_ymax: 1300
