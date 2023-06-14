@@ -7,7 +7,7 @@ np.random.seed(0)
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
-from geometry_msgs.msg import Pose, PoseArray
+from geometry_msgs.msg import Pose, PoseArray, PoseWithCovarianceStamped
 
 from classes.ParticleFilter import ParticleFilter
 from classes.Map import Map
@@ -37,12 +37,17 @@ class MonteCarloLocalizationNode:
         self.last_odometry_msg = None
         self.current_odometry_msg = None
         self.current_laser_msg = None
+        self.current_amcl_pose = None
+        self.current_amcl_particle_cloud = None
 
         if self.is_plt_on == 1:
-            self.visualizer = Visualizer()
+            self.visualizer = Visualizer(self.plt_mode)
             self.visualizer.plot_particles(self.map, self.particle_filter)
-            self.visualizer.plot_likelihood_field(self.map)
-        
+            
+            if self.plt_mode == 0:
+                self.visualizer.plot_likelihood_field(self.map)
+            if self.plt_mode == 1:
+                self.visualizer.plot_ground_truth_map(self.map)
         self.initialize_subscribers()
         self.initialize_publishers()
         self.initialize_timer()
@@ -81,16 +86,27 @@ class MonteCarloLocalizationNode:
             self.initial_theta_sd = rospy.get_param("initial_theta_sd", 100)
 
         self.is_plt_on = rospy.get_param("plt_on", 0)
-        
+        if self.is_plt_on == 1:
+            self.plt_mode = rospy.get_param("plt_mode", 0)
+
     def initialize_timer(self):
         self.timer = rospy.Timer(rospy.Duration(1.0 / self.node_frequency), self.timer_callback) 
 
     def initialize_subscribers(self):
         self.sub_pose_topic = rospy.Subscriber('/pose', Odometry, self.callback_read_odometry)
         self.sub_scan_topic = rospy.Subscriber('/scan', LaserScan, self.callback_read_laser)
+        if self.plt_mode == 1:
+            self.amcl_pose = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.callback_read_amcl_pose)
+            self.amcl_particle_cloud = rospy.Subscriber('/particlecloud', PoseArray, self.callback_read_amcl_particle_cloud)
 
     def initialize_publishers(self):
         self.pub_mcl_particles = rospy.Publisher('/mcl_particles', PoseArray, queue_size=1)
+
+    def callback_read_amcl_particle_cloud(self, msg):
+        self.current_amcl_particle_cloud = msg
+
+    def callback_read_amcl_pose(self, msg):
+        self.current_amcl_pose = msg
 
     def callback_read_odometry(self, msg):
         self.current_odometry_msg = msg
@@ -123,7 +139,7 @@ class MonteCarloLocalizationNode:
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.01, 0.01, 0.1, 0.01])
+            self.particle_filter.motion_model_odometry(u, [0.01, 0.01, 0.4, 0.008])
             
             # Run the likelihood field algorithm
             self.particle_filter.likelihood_field_algorithm(self.processing_laser_msg)
@@ -134,20 +150,25 @@ class MonteCarloLocalizationNode:
             # Normalizing weights for the chosen resampler
             self.particle_filter.normalize_weights()
 
-            
             # Resampling particles only if the effective number 
             # of particles is less than 80% of the real one
             n_eff, number_of_particles = self.particle_filter.get_n_eff()
-            if n_eff < 0.8*number_of_particles:
+            if n_eff < 0.9*number_of_particles:
                 self.particle_filter.resampler()
             
             if self.is_plt_on == 1:
-                # Plot odometry reading
-                self.visualizer.plot_odometry_reading(current_x, current_y, current_theta)
+                # If plotting in debug mode
+                if self.plt_mode == 0:
+                    # Plot odometry reading
+                    self.visualizer.plot_odometry_reading(current_x, current_y, current_theta)
+                    
+                    # Plot the laser projection
+                    self.visualizer.plot_laser_projection(self.current_laser_msg)
                 
-                # Plot the laser projection
-                self.visualizer.plot_laser_projection(self.current_laser_msg)
-
+                # If plotting in results mode
+                if self.plt_mode == 1:
+                    self.visualizer.plot_amcl_pose(self.map, self.current_amcl_pose, self.current_amcl_particle_cloud)
+                
                 # Update the visualizer
                 self.visualizer.update_particles(self.map, self.particle_filter)
 

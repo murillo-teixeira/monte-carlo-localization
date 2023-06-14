@@ -33,3 +33,22 @@ class ParticleSet(np.ndarray):
 
     def set_particle(self, i, particle):
         self[:, i] = particle
+
+    def get_mean_particle(self, percentile):
+        self.update_attr()
+        weight_limit = np.percentile(self.weights, percentile)
+        filtered_arr = np.array(self[:, self.weights >= weight_limit])
+        
+        weight_sum = np.sum(filtered_arr[3, :])
+        try:
+            return [
+                np.sum(filtered_arr[0, :]*filtered_arr[3, :])/weight_sum,
+                np.sum(filtered_arr[1, :]*filtered_arr[3, :])/weight_sum,
+                np.sum(filtered_arr[2, :]*filtered_arr[3, :])/weight_sum,
+            ]
+        except:
+            return [
+                np.mean(filtered_arr[0, :]),
+                np.mean(filtered_arr[1, :]),
+                np.mean(filtered_arr[2, :]),
+            ]

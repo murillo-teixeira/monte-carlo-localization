@@ -4,6 +4,8 @@ from scipy.stats import multivariate_normal
 from classes.ParticleSet import ParticleSet
 from classes.Map import Map
 
+from sensor_msgs.msg import LaserScan
+
 class ParticleFilter:
     def __init__(self, map : Map, zhit, zrand, x_sensor, y_sensor):
         self.particles = None
@@ -60,7 +62,7 @@ class ParticleFilter:
         orientations = np.random.uniform(0, 2*np.pi, number_of_particles)
         self.particles.set_orientations(orientations)
 
-    def likelihood_field_algorithm(self, laser_msg):
+    def likelihood_field_algorithm(self, laser_msg : LaserScan):
         # Selecting only a subset of the readings
         number_of_particles = self.particles.number_of_particles
         subsampling_step = 10

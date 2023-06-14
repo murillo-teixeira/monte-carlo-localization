@@ -6,35 +6,48 @@ from matplotlib.patches import Wedge
 from classes.Map import Map
 from classes.ParticleFilter import ParticleFilter
 from classes.Particle import Particle
+from scripts.euler_from_quaternion import euler_from_quaternion
+from geometry_msgs.msg import PoseArray, PoseWithCovarianceStamped
+from sensor_msgs.msg import LaserScan
 
 class Visualizer:
 
-    def __init__(self):
+    def __init__(self, plt_mode):
         plt.ion()
-        self.fig, self.axes = plt.subplots(nrows=2, ncols=2, gridspec_kw={'width_ratios': [1, 1], 'height_ratios': [1, 1]}, figsize=[6, 6])
+        self.plt_mode = plt_mode
+        if self.plt_mode == 0:
+            self.fig, self.axes = plt.subplots(nrows=2, ncols=2, gridspec_kw={'width_ratios': [1, 1], 'height_ratios': [1, 1]}, figsize=[6, 6])
+            
+            self.odom_subplot       = self.axes[0, 1]
+            self.laser_subplot      = self.axes[1, 1]
+            self.map_subplot        = self.axes[0, 0]
+            self.laser_proj_subplot = self.axes[1, 0]
         
+            self.map_subplot.set_title("Map with particles")
+            self.odom_subplot.set_title("Odometry data")
+            self.laser_subplot.set_title("Likelihood field")
+            self.laser_proj_subplot.set_title("Laser projection")
+
+
+        if self.plt_mode == 1:
+            self.fig, self.axes = plt.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1, 1]}, figsize=[6, 3])
+            
+            self.map_subplot        = self.axes[0]
+            self.gd_map_subplot     = self.axes[1]
+            self.map_subplot.set_title("Our results")
+            self.gd_map_subplot.set_title("AMCL results")
+
         for ax in self.axes.flatten():
             ax.set_xticks([])
             ax.set_yticks([])
 
-        self.odom_subplot       = self.axes[0, 1]
-        self.laser_subplot      = self.axes[1, 1]
-        self.map_subplot        = self.axes[0, 0]
-        self.laser_proj_subplot = self.axes[1, 0]
-
         self.particle_set = None
+        self.particle_set_mean = None
+        self.amcl_particle = None
+        self.amcl_particle_cloud = None
 
-        self.configure_subplots()
-
-        # Plotar apenas a cada 10 chamadas
         self.plot_counter = 0
-
-    def configure_subplots(self):
-        self.map_subplot.set_title("Map with particles")
-        self.odom_subplot.set_title("Odometry data")
-        self.laser_subplot.set_title("Likelihood field")
-        self.laser_proj_subplot.set_title("Laser projection")
-
+           
     def spin(self):
         plt.show(block=True)
 
@@ -42,18 +55,60 @@ class Visualizer:
         plt.draw()
         plt.pause(0.01)
 
-    def plot_odometry_reading(self, x, y, theta):
-        odom_particle = Particle(x, y, theta)
-        self.plot_single_particle(odom_particle, self.odom_subplot)
+    def plot_ground_truth_map(self, map: Map):
+        self.plot_map(map, self.gd_map_subplot)
+        
+    def plot_amcl_pose(self, map: Map, amcl_pose_msg: PoseWithCovarianceStamped, amcl_particle_cloud: PoseArray):
+        x = amcl_pose_msg.pose.pose.position.x
+        y = amcl_pose_msg.pose.pose.position.y
+        orientation = amcl_pose_msg.pose.pose.orientation
+        _, _, theta = euler_from_quaternion(orientation.x, orientation.y, orientation.z, orientation.w)
+        
+        if not self.amcl_particle_cloud:
+            self.amcl_particle_cloud = self.gd_map_subplot.quiver(
+                [(-particle.position.x/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses],
+                [(-particle.position.y/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses],
+                -0.001*np.cos([theta]),
+                -0.001*np.sin([theta]),
+                color='red', alpha=0.3, angles='xy', pivot='mid'
+            )
+        else:
+            X = np.array([(-particle.position.x/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses])
+            Y = np.array([(-particle.position.y/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses])
+            U = -0.001*np.cos([theta]),
+            V = -0.001*np.sin([theta]),
+            self.amcl_particle_cloud.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
+            self.amcl_particle_cloud.set_UVC(U, V)
+
+        if not self.amcl_particle:
+            self.amcl_particle = self.gd_map_subplot.quiver(
+                [-x/map.resolution + 1984/2],
+                [-y/map.resolution + 1984/2],
+                -0.001*np.cos([theta]),
+                -0.001*np.sin([theta]),
+                color='black', alpha=1, angles='xy', pivot='mid'
+            )
+        else:
+            X = np.array([-x/map.resolution + 1984/2])
+            Y = np.array([-y/map.resolution + 1984/2])
+            U = -0.001*np.cos([theta]),
+            V = -0.001*np.sin([theta]),
+            self.amcl_particle.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
+            self.amcl_particle.set_UVC(U, V)
+
         self.draw()
 
-    def plot_map(self, map : Map):
-        self.map_subplot.imshow(map.map_matrix, cmap='gray')
-        self.map_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
-        self.map_subplot.axis(ymin=map.roi_ymin,ymax=map.roi_ymax)
+    def plot_odometry_reading(self, x, y, theta):
+        self.odom_subplot.quiver([x], [y], [0.1*np.cos(theta)], [0.1*np.sin(theta)], color='red', angles='xy', pivot='mid')
+        self.draw()
+
+    def plot_map(self, map : Map, subplot):
+        subplot.imshow(map.map_matrix, cmap='gray')
+        subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
+        subplot.axis(ymin=map.roi_ymin,ymax=map.roi_ymax)
 
     def plot_particles(self, map : Map, particle_filter : ParticleFilter):
-        self.plot_map(map)
+        self.plot_map(map, self.map_subplot)
         particle_filter.particles.update_attr()
         self.particle_set = self.map_subplot.quiver(
             particle_filter.particles.x_positions/map.resolution,
@@ -72,16 +127,31 @@ class Visualizer:
         V = 0.001*np.sin(particle_filter.particles.orientations),
         self.particle_set.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
         self.particle_set.set_UVC(U, V)
-
-    def plot_single_particle(self, particle, subplot):
-        subplot.quiver([particle.x], [particle.y], [0.1*np.cos(particle.theta)], [0.1*np.sin(particle.theta)], color='red', angles='xy', pivot='mid')
         
-    def plot_likelihood_field(self, map):
+        x, y, theta = particle_filter.particles.get_mean_particle(75)
+        
+        if not self.particle_set_mean:
+            self.particle_set_mean = self.map_subplot.quiver(
+                [x/map.resolution],
+                [y/map.resolution],
+                0.001*np.cos([theta]),
+                0.001*np.sin([theta]),
+                color='black', alpha=1, angles='xy', pivot='mid'
+            )
+        else:
+            X = np.array([x/map.resolution])
+            Y = np.array([y/map.resolution])
+            U = 0.001*np.cos([theta]),
+            V = 0.001*np.sin([theta]),
+            self.particle_set_mean.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
+            self.particle_set_mean.set_UVC(U, V)
+
+    def plot_likelihood_field(self, map: Map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')
         self.laser_subplot.axis(xmin=map.roi_xmin,xmax=map.roi_xmax)
         self.laser_subplot.axis(ymin=map.roi_ymin,ymax=map.roi_ymax)
     
-    def plot_laser_projection(self, laser_msg):
+    def plot_laser_projection(self, laser_msg: LaserScan):
         if self.plot_counter % 5 == 0:
             self.laser_proj_subplot.cla()
             self.laser_proj_subplot.set_xticks([])
@@ -89,7 +159,7 @@ class Visualizer:
             self.laser_proj_subplot.axis(xmin=-6,xmax=6)
             self.laser_proj_subplot.axis(ymin=-6,ymax=6)
             self.laser_proj_subplot.set_title("Laser projection")
-            self.plot_single_particle(Particle(0, 0, 0), self.laser_proj_subplot)
+            self.laser_proj_subplot.quiver([0], [0], [0.1], [0], color='red', angles='xy', pivot='mid')
             wedge = Wedge((0, 0), laser_msg.range_max, np.rad2deg(laser_msg.angle_min), np.rad2deg(laser_msg.angle_max), color='b', alpha=0.5, fill=False)
             self.laser_proj_subplot.add_patch(wedge)
             for i, range in enumerate(laser_msg.ranges):

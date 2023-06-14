@@ -26,7 +26,7 @@
     </node>
 
     <!-- Play your bag (change the directory of your bag) -->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 2 --clock $(arg bag_location)"/>
+    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 4 $(arg bag_location)"/>
     
     <!-- If you know where your robot starts in the map, then change these values, such that amcl converges faster -->
     <!-- <arg name="initial_x" default="0.0" />
