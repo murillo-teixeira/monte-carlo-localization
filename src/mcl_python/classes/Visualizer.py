@@ -30,7 +30,7 @@ class Visualizer:
 
 
         if self.plt_mode == 1:
-            self.fig, self.axes = plt.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1, 1]}, figsize=[6, 3])
+            self.fig, self.axes = plt.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1, 1]}, figsize=[7, 4])
             
             self.map_subplot        = self.axes[0]
             self.gd_map_subplot     = self.axes[1]
@@ -70,7 +70,7 @@ class Visualizer:
                 [(-particle.position.y/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses],
                 -0.001*np.cos([theta]),
                 -0.001*np.sin([theta]),
-                color='red', alpha=0.3, angles='xy', pivot='mid'
+                color='red', alpha=0.1, angles='xy', pivot='mid'
             )
         else:
             X = np.array([(-particle.position.x/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses])
@@ -115,7 +115,7 @@ class Visualizer:
             particle_filter.particles.y_positions/map.resolution,
             0.001*np.cos(particle_filter.particles.orientations),
             0.001*np.sin(particle_filter.particles.orientations),
-            color='red', alpha=0.3, angles='xy', pivot='mid'
+            color='red', alpha=0.1, angles='xy', pivot='mid'
         )
         self.draw()
 
@@ -128,7 +128,7 @@ class Visualizer:
         self.particle_set.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
         self.particle_set.set_UVC(U, V)
         
-        x, y, theta = particle_filter.particles.get_mean_particle(75)
+        x, y, theta = particle_filter.particles.get_mean_particle(95)
         
         if not self.particle_set_mean:
             self.particle_set_mean = self.map_subplot.quiver(

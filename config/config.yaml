@@ -1,40 +1,21 @@
-node_frequency: 2.0
+# Node parameters
+node_frequency: 5.0
+
+# Particle filter param
 number_of_particles: 1000
 zhit: 10
 zrand: 1
+sigma_squared: 10
+motion_model_noise: [0.01, 0.01, 0.4, 0.008]
+
+# Robot parameters
 x_sensor: 0
 y_sensor: 0
-sigma_squared: 5
 
-# Type of localization (1 for global; 0 for local)
-global_localization: 1
-
-# Plotting with matplotlib
+# Turn plotting on/off
 plt_on: 1
 
 # Modes of plotting: 
 # 0 - Debug (odometry, laser, likelihood field) 
 # 1 - Results (our implementation x amcl) 
 plt_mode: 1
-
-# Elevator values
-initial_pos_sd: 100
-initial_pos_x: 992
-initial_pos_y: 992
-initial_theta: 3.5
-initial_theta_sd: 0.25
-map_roi_xmin: 760
-map_roi_xmax: 1050
-map_roi_ymin: 784
-map_roi_ymax: 1090
-
-# 5th floor values
-# initial_pos_y: 1340
-# initial_pos_x: 1000
-# initial_pos_sd: 200
-# initial_theta: 4.5
-# initial_theta_sd: 0.25
-# map_roi_xmin: 890
-# map_roi_xmax: 1400
-# map_roi_ymin: 730
-# map_roi_ymax: 1160

@@ -71,6 +71,7 @@ class MonteCarloLocalizationNode:
         self.zhit = rospy.get_param("zhit", 0.7)
         self.zrand = rospy.get_param("zrand", 0.3)
         self.likelihood_field_variance = rospy.get_param("sigma_squared", 0)
+        self.motion_model_noise = rospy.get_param("motion_model_noise", [0.01, 0.01, 0.1, 0.008])
         
         # Relative position of the LIDAR
         self.x_sensor = rospy.get_param("x_sensor", 0)
@@ -139,7 +140,7 @@ class MonteCarloLocalizationNode:
             ]
 
             # Run the odometry motion model to update the particles' positions
-            self.particle_filter.motion_model_odometry(u, [0.01, 0.01, 0.4, 0.008])
+            self.particle_filter.motion_model_odometry(u, self.motion_model_noise)
             
             # Run the likelihood field algorithm
             self.particle_filter.likelihood_field_algorithm(self.processing_laser_msg)
