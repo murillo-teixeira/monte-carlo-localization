@@ -5,7 +5,6 @@ from matplotlib.patches import Wedge
 
 from classes.Map import Map
 from classes.ParticleFilter import ParticleFilter
-from classes.Particle import Particle
 from scripts.euler_from_quaternion import euler_from_quaternion
 from geometry_msgs.msg import PoseArray, PoseWithCovarianceStamped
 from sensor_msgs.msg import LaserScan
@@ -58,11 +57,7 @@ class Visualizer:
     def plot_ground_truth_map(self, map: Map):
         self.plot_map(map, self.gd_map_subplot)
         
-    def plot_amcl_pose(self, map: Map, amcl_pose_msg: PoseWithCovarianceStamped, amcl_particle_cloud: PoseArray):
-        x = amcl_pose_msg.pose.pose.position.x
-        y = amcl_pose_msg.pose.pose.position.y
-        orientation = amcl_pose_msg.pose.pose.orientation
-        _, _, theta = euler_from_quaternion(orientation.x, orientation.y, orientation.z, orientation.w)
+    def plot_amcl_pose(self, map: Map, amcl_particle_cloud: PoseArray, x, y, theta):
         
         if not self.amcl_particle_cloud:
             self.amcl_particle_cloud = self.gd_map_subplot.quiver(
@@ -119,7 +114,7 @@ class Visualizer:
         )
         self.draw()
 
-    def update_particles(self, map : Map, particle_filter : ParticleFilter):
+    def update_particles(self, map : Map, particle_filter : ParticleFilter, x, y, theta):
         particle_filter.particles.update_attr()
         X = particle_filter.particles.x_positions/map.resolution
         Y = particle_filter.particles.y_positions/map.resolution
@@ -127,8 +122,6 @@ class Visualizer:
         V = 0.001*np.sin(particle_filter.particles.orientations),
         self.particle_set.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
         self.particle_set.set_UVC(U, V)
-        
-        x, y, theta = particle_filter.particles.get_mean_particle(95)
         
         if not self.particle_set_mean:
             self.particle_set_mean = self.map_subplot.quiver(

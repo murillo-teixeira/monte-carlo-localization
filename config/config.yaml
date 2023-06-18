@@ -1,8 +1,8 @@
 # Node parameters
-node_frequency: 5.0
+node_frequency: 10.0
 
 # Particle filter param
-number_of_particles: 1000
+number_of_particles: 10000
 zhit: 10
 zrand: 1
 sigma_squared: 10
@@ -19,3 +19,7 @@ plt_on: 1
 # 0 - Debug (odometry, laser, likelihood field) 
 # 1 - Results (our implementation x amcl) 
 plt_mode: 1
+
+# Output configurations
+output_on: 1
+output_path: "/home/murillo/catkin_ws/src/monte-carlo-localization/output"

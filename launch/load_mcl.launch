@@ -5,10 +5,11 @@
     <arg name="map_location" default="$(find mcl_python)/map" />
     
     <rosparam file="$(find mcl_python)/config/config.yaml" />
-    <rosparam file="$(find mcl_python)/config/elevator.yaml" />
-    <rosparam file="$(find mcl_python)/config/global.yaml" />
-    <arg name="map_name" default="elevator_corridor" />
-    <arg name="bag_location" default="$(find mcl_python)/bagfiles/elevator_amcl_global.bag" />
+    <rosparam file="$(find mcl_python)/config/5th_floor.yaml" />
+    <rosparam file="$(find mcl_python)/config/local.yaml" />
+    
+    <arg name="map_name" default="5th_floor" />
+    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5th_floor/5th_floor_3_amcl_local.bag" />
    
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">
@@ -25,6 +26,7 @@
     <node pkg="map_server" type="map_server" name="map_server" output="screen" args="$(arg map_location)/$(arg map_name).yaml" />
 
     <!-- Play your bag (change the directory of your bag) -->
-    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 4 $(arg bag_location)"/>
+    <arg name="node_start_delay" default="5.0" />  
+    <node pkg="rosbag" type="play" name="player" output="screen" args="-r 4 $(arg bag_location)" launch-prefix="bash -c 'sleep $(arg node_start_delay); $0 $@' " />
 
 </launch>

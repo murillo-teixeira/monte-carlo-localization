@@ -1,0 +1,9 @@
+initial_pos_y: 1346
+initial_pos_x: 1025
+initial_pos_sd: 100
+initial_theta: 4.5
+initial_theta_sd: 0.25
+map_roi_xmin: 890
+map_roi_xmax: 1400
+map_roi_ymin: 730
+map_roi_ymax: 1160

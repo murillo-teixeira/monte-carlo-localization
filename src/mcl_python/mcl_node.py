@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
 import rospy
-import time
+from datetime import datetime
 import numpy as np
 np.random.seed(0)
 
@@ -48,14 +48,19 @@ class MonteCarloLocalizationNode:
                 self.visualizer.plot_likelihood_field(self.map)
             if self.plt_mode == 1:
                 self.visualizer.plot_ground_truth_map(self.map)
+        
         self.initialize_subscribers()
         self.initialize_publishers()
         self.initialize_timer()
         
+        self.file_object = open(f'{self.output_path}/{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.csv', 'a')
+
         if self.is_plt_on == 1:
             self.visualizer.spin()
         else:
             rospy.spin()
+
+        self.file_object.close()
 
     def load_parameters(self):
         self.map_file = rospy.get_param("~map_file")
@@ -90,6 +95,10 @@ class MonteCarloLocalizationNode:
         if self.is_plt_on == 1:
             self.plt_mode = rospy.get_param("plt_mode", 0)
 
+        self.output_on = rospy.get_param("output_on", 0)
+        if self.output_on == 1:
+            self.output_path = rospy.get_param("output_path", "")
+
     def initialize_timer(self):
         self.timer = rospy.Timer(rospy.Duration(1.0 / self.node_frequency), self.timer_callback) 
 
@@ -118,7 +127,7 @@ class MonteCarloLocalizationNode:
     def timer_callback(self, timer):
         if not self.last_odometry_msg:
             self.last_odometry_msg = self.current_odometry_msg
-        else:
+        elif self.current_laser_msg:
             self.processing_laser_msg = self.current_laser_msg
             self.processing_odometry_msg = self.current_odometry_msg
             
@@ -131,7 +140,7 @@ class MonteCarloLocalizationNode:
             previous_orientation = self.last_odometry_msg.pose.pose.orientation
             _, _, current_theta = euler_from_quaternion(current_orientation.x, current_orientation.y, current_orientation.z, current_orientation.w)
             _, _, previous_theta = euler_from_quaternion(previous_orientation.x, previous_orientation.y, previous_orientation.z, previous_orientation.w)
-            
+
             u  = [
                 current_x - previous_x,
                 current_y - previous_y,
@@ -157,6 +166,11 @@ class MonteCarloLocalizationNode:
             if n_eff < 0.9*number_of_particles:
                 self.particle_filter.resampler()
             
+            # Update the visualizer
+            x_mean, y_mean, theta_mean = self.particle_filter.particles.get_mean_particle(95)
+            self.file_object.write(f'{timer.current_real}, {x_mean}, {y_mean}, {theta_mean}, ')
+            self.visualizer.update_particles(self.map, self.particle_filter, x_mean, y_mean, theta_mean)
+            
             if self.is_plt_on == 1:
                 # If plotting in debug mode
                 if self.plt_mode == 0:
@@ -168,14 +182,15 @@ class MonteCarloLocalizationNode:
                 
                 # If plotting in results mode
                 if self.plt_mode == 1:
-                    self.visualizer.plot_amcl_pose(self.map, self.current_amcl_pose, self.current_amcl_particle_cloud)
-                
-                # Update the visualizer
-                self.visualizer.update_particles(self.map, self.particle_filter)
+                    x_amcl = self.current_amcl_pose.pose.pose.position.x
+                    y_amcl = self.current_amcl_pose.pose.pose.position.y
+                    orientation_amcl = self.current_amcl_pose.pose.pose.orientation
+                    _, _, theta_amcl = euler_from_quaternion(orientation_amcl.x, orientation_amcl.y, orientation_amcl.z, orientation_amcl.w)
+                    self.file_object.write(f'{x_amcl}, {y_amcl}, {theta_amcl}\n')
+                    self.visualizer.plot_amcl_pose(self.map, self.current_amcl_particle_cloud, x_amcl, y_amcl, theta_amcl)
 
             self.last_odometry_msg = self.processing_odometry_msg
 
-            # self.publish_particles()
 
     # Tentativa de publicar as partículas para o RViz
     # Funciona, mas precisa de alguma transformação de coordenadas
@@ -185,7 +200,7 @@ class MonteCarloLocalizationNode:
         pose_array.header.frame_id = 'map'
         for particle in self.particle_filter.particles.T:
             pose = Pose()
-            pose.position.x, pose.position.y, pose.position.z = particle[0] - 1984*0.05/2,  1984*0.05/2 - particle[1], 0.2
+            pose.position.x, pose.position.y, pose.position.z = particle[0], particle[1], 0.2
             x, y, z, w = quaternion_from_euler(0, 0, particle[2])
             pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w = x, y, z, w
             pose_array.poses.append(pose)
@@ -193,6 +208,7 @@ class MonteCarloLocalizationNode:
 
 def main():
     MonteCarloLocalizationNode()
+    
 
 if __name__ == '__main__':
     main()
