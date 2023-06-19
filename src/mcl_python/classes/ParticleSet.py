@@ -1,4 +1,6 @@
 import numpy as np
+from sklearn.cluster import KMeans
+from scipy import stats
 
 class ParticleSet(np.ndarray):
 
@@ -25,6 +27,9 @@ class ParticleSet(np.ndarray):
     def set_positions(self, new_positions):
         self[0:2, :] = new_positions
 
+    def get_positions(self):
+        return self[0:2, :]
+
     def set_weights(self, new_weights):
         self[3, :] = new_weights
 
@@ -36,19 +41,15 @@ class ParticleSet(np.ndarray):
 
     def get_mean_particle(self, percentile):
         self.update_attr()
-        weight_limit = np.percentile(self.weights, percentile)
-        filtered_arr = np.array(self[:, self.weights >= weight_limit])
-        
-        weight_sum = np.sum(filtered_arr[3, :])
-        try:
-            return [
-                np.sum(filtered_arr[0, :]*filtered_arr[3, :])/weight_sum,
-                np.sum(filtered_arr[1, :]*filtered_arr[3, :])/weight_sum,
-                np.sum(filtered_arr[2, :]*filtered_arr[3, :])/weight_sum,
-            ]
-        except:
-            return [
-                np.mean(filtered_arr[0, :]),
-                np.mean(filtered_arr[1, :]),
-                np.mean(filtered_arr[2, :]),
-            ]
+
+        clusters = KMeans(n_clusters=4,random_state=0,n_init="auto").fit(self.get_positions().T)
+
+        labels=np.array(clusters.labels_)
+
+        cluster_certo = stats.mode(labels, keepdims=False)[0]
+
+        return [
+            np.mean(self.x_positions[labels== cluster_certo]),
+            np.mean(self.y_positions[labels== cluster_certo]),
+            np.mean(self.orientations[labels== cluster_certo])
+        ]

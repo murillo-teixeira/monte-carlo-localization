@@ -87,3 +87,14 @@ Relatório:
             - Mostrar o nosso global localization com o programa: Murillo
 
     - Conclusão: Afonso
+
+
+Tarefas:
+    - Resultados para todas as bags
+        - Qualitativo
+        - Quantitativo
+    - Rodar o programa para vários números de partícula: Pedro
+        - Global do elevador
+        - 
+    - Refazer a conclusão
+    - Revisar o texto

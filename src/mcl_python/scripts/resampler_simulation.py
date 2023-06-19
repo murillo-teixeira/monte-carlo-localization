@@ -66,7 +66,7 @@ for i in range(size):
 weights = generate_weights(size)
 
 # Set up the figure and axes
-fig, ax = plt.subplots(1, 5, figsize=(10, 4))
+fig, ax = plt.subplots(1, 4, figsize=(10, 4))
 
 # Plot the initial particles
 x_initial = [particle[0] for particle in particles]
@@ -75,7 +75,7 @@ ax[0].scatter(x_initial, y_initial, color='blue', marker='o', alpha=0.2, s=100, 
 ax[0].set_xlabel('X')
 ax[0].set_ylabel('Y')
 ax[0].grid(True)
-num_iterations = 4
+num_iterations = 3
 
 for iteration in range(num_iterations):
     resampled_particles = resampler(particles, weights)
