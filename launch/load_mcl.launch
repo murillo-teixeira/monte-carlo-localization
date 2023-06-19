@@ -9,7 +9,7 @@
     <rosparam file="$(find mcl_python)/config/global.yaml" />
     
     <arg name="map_name" default="5th_floor" />
-    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5th_floor/5th_floor_1_amcl_global.bag" />
+    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5th_floor/5th_floor_1.bag" />
    
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">
