@@ -19,8 +19,8 @@ plt_on: 1
 # Modes of plotting: 
 # 0 - Debug (odometry, laser, likelihood field) 
 # 1 - Results (our implementation x amcl) 
-plt_mode: 1
+plt_mode: 0
 
 # Output configurations
-output_on: 1
+output_on: 0
 output_path: "/home/murillo/catkin_ws/src/monte-carlo-localization/output"

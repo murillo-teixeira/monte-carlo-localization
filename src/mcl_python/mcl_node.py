@@ -50,7 +50,6 @@ class MonteCarloLocalizationNode:
                 self.visualizer.plot_ground_truth_map(self.map)
         
         self.initialize_subscribers()
-        self.initialize_publishers()
         self.initialize_timer()
 
         if self.output_on == 1:
