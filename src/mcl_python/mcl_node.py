@@ -170,7 +170,8 @@ class MonteCarloLocalizationNode:
 
             # Update the visualizer
             x_mean, y_mean, theta_mean = self.particle_filter.particles.get_mean_particle(90)
-            self.file_object.write(f'{timer.current_real}, {x_mean}, {y_mean}, {theta_mean}, ')
+            if self.output_on == 1:
+                self.file_object.write(f'{timer.current_real}, {x_mean}, {y_mean}, {theta_mean}, ')
             self.visualizer.update_particles(self.map, self.particle_filter, x_mean, y_mean, theta_mean)
 
             if self.is_plt_on == 1:
@@ -188,7 +189,8 @@ class MonteCarloLocalizationNode:
                     y_amcl = self.current_amcl_pose.pose.pose.position.y
                     orientation_amcl = self.current_amcl_pose.pose.pose.orientation
                     _, _, theta_amcl = euler_from_quaternion(orientation_amcl.x, orientation_amcl.y, orientation_amcl.z, orientation_amcl.w)
-                    self.file_object.write(f'{x_amcl}, {y_amcl}, {theta_amcl}\n')
+                    if self.output_on == 1:
+                        self.file_object.write(f'{x_amcl}, {y_amcl}, {theta_amcl}\n')
                     self.visualizer.plot_amcl_pose(self.map, self.current_amcl_particle_cloud, x_amcl, y_amcl, theta_amcl)
 
             self.last_odometry_msg = self.processing_odometry_msg
