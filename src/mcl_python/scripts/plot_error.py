@@ -1,14 +1,13 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-# output_files = [
-#     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab/global/2023_06_19_13_20_56.csv",
-#     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab/local/2023_06_19_13_17_25.csv",
-#     ]
-
 output_files = [
-    "/home/murillo/catkin_ws/src/monte-carlo-localization/output/5th_floor/global/2023_06_18_19_36_47.csv",
-    "/home/murillo/catkin_ws/src/monte-carlo-localization/output/5th_floor/local/2023_06_18_19_24_15.csv",
+    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/100.csv",
+    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/500.csv",
+    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/1000.csv",
+    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/5000.csv",
+    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/10000.csv",
+    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/50000.csv",
     ]
 
 for output_file in output_files:
@@ -36,11 +35,11 @@ for output_file in output_files:
     plt.xlabel("Tempo (s)")
     plt.ylabel("Erro angular (dg)")
 
-plt.suptitle('Erro de localização para bag no mapa do 5º piso')
+plt.suptitle('Convergêcia de resultados com o AMCL')
 
 plt.subplot(211)
-plt.legend(['Global localization', 'Pose tracking'], loc=1)
+plt.legend(['100 partículas', '500 partículas', '1000 partículas', '5000 partículas', '10000 partículas', '50000 partículas'], loc=1)
 plt.subplot(212)
-plt.legend(['Global localization', 'Pose tracking'], loc=1)
+plt.legend(['100 partículas', '500 partículas', '1000 partículas', '5000 partículas', '10000 partículas', '50000 partículas'], loc=1)
 plt.savefig(output_file.replace('.csv', '.png'))
 plt.show()
