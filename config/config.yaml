@@ -6,6 +6,7 @@ number_of_particles: 10000
 zhit: 10
 zrand: 1
 sigma_squared: 10
+
 motion_model_noise: [0.01, 0.01, 0.4, 0.008]
 
 # Robot parameters

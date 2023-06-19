@@ -3,7 +3,7 @@
 import rospy
 from datetime import datetime
 import numpy as np
-np.random.seed(0)
+np.random.seed(9999)
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -52,15 +52,17 @@ class MonteCarloLocalizationNode:
         self.initialize_subscribers()
         self.initialize_publishers()
         self.initialize_timer()
-        
-        self.file_object = open(f'{self.output_path}/{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.csv', 'a')
+
+        if self.output_on == 1:
+            self.file_object = open(f'{self.output_path}/{datetime.now().strftime("%Y_%m_%d_%H_%M_%S")}.csv', 'a')
 
         if self.is_plt_on == 1:
             self.visualizer.spin()
         else:
             rospy.spin()
 
-        self.file_object.close()
+        if self.output_on == 1:
+            self.file_object.close()
 
     def load_parameters(self):
         self.map_file = rospy.get_param("~map_file")
@@ -165,12 +167,12 @@ class MonteCarloLocalizationNode:
             n_eff, number_of_particles = self.particle_filter.get_n_eff()
             if n_eff < 0.9*number_of_particles:
                 self.particle_filter.resampler()
-            
+
             # Update the visualizer
-            x_mean, y_mean, theta_mean = self.particle_filter.particles.get_mean_particle(95)
+            x_mean, y_mean, theta_mean = self.particle_filter.particles.get_mean_particle(90)
             self.file_object.write(f'{timer.current_real}, {x_mean}, {y_mean}, {theta_mean}, ')
             self.visualizer.update_particles(self.map, self.particle_filter, x_mean, y_mean, theta_mean)
-            
+
             if self.is_plt_on == 1:
                 # If plotting in debug mode
                 if self.plt_mode == 0:

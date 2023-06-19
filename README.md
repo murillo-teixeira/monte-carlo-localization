@@ -67,16 +67,10 @@ roslaunch mcl_python load_mcl.launch
     3. Criar e testar o Low Variance Sampler
     4. Integrar os algoritmos implementados na estrutura pré-definida
 
-Ideias:
-    <!-- 1. Inicializar as partículas perto do local esperado -->
-    <!-- 2. Ler melhor o mapa (ler .png) -->
-    - Procurar melhores resultados com outras bags
-    - 
-
 Relatório:
+
     - Introdução: Mauro
     - Métodos e algoritmos: Mauro & Afonso
-    
     - Implementação
         - Estrutura geral das classes e do nó: Murillo
         - Implementação dos algoritmos (incluir as imagens das microsimulações)
@@ -86,13 +80,10 @@ Relatório:
         - Implementação conjunta na estrutura de classes: Murillo
     
     - Resultados experimentais
-        - Evolução das escolhas de parâmetros e os resultados: Pedro
         - Localização local e comparação com o AMCL: Murillo
-            - Deixar os dois no RViz
             - Arrumar alguma forma de comparar os resultados
 
         - Global localization
-            - Tentar fazer no AMCL para comparar com o nosso: Pedro
             - Mostrar o nosso global localization com o programa: Murillo
 
     - Conclusão: Afonso

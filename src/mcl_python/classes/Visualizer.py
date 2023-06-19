@@ -27,14 +27,16 @@ class Visualizer:
             self.laser_subplot.set_title("Likelihood field")
             self.laser_proj_subplot.set_title("Laser projection")
 
+        self.amcl_history = []
+        self.mcl_history = []
 
         if self.plt_mode == 1:
             self.fig, self.axes = plt.subplots(nrows=1, ncols=2, gridspec_kw={'width_ratios': [1, 1]}, figsize=[7, 4])
             
             self.map_subplot        = self.axes[0]
             self.gd_map_subplot     = self.axes[1]
-            self.map_subplot.set_title("Our results")
-            self.gd_map_subplot.set_title("AMCL results")
+            self.map_subplot.set_title("Nossos resultados")
+            self.gd_map_subplot.set_title("Resultados do AMCL")
 
         for ax in self.axes.flatten():
             ax.set_xticks([])
@@ -60,6 +62,7 @@ class Visualizer:
     def plot_amcl_pose(self, map: Map, amcl_particle_cloud: PoseArray, x, y, theta):
         
         if not self.amcl_particle_cloud:
+            
             self.amcl_particle_cloud = self.gd_map_subplot.quiver(
                 [(-particle.position.x/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses],
                 [(-particle.position.y/map.resolution + 1984/2) for particle in amcl_particle_cloud.poses],
@@ -83,13 +86,17 @@ class Visualizer:
                 -0.001*np.sin([theta]),
                 color='black', alpha=1, angles='xy', pivot='mid'
             )
+            self.amcl_history_plot, = self.gd_map_subplot.plot([], [], alpha=0.5, c = "#D95319")
         else:
+            self.amcl_history.append([x, y])
             X = np.array([-x/map.resolution + 1984/2])
             Y = np.array([-y/map.resolution + 1984/2])
             U = -0.001*np.cos([theta]),
             V = -0.001*np.sin([theta]),
             self.amcl_particle.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
             self.amcl_particle.set_UVC(U, V)
+            self.amcl_history_plot.set_xdata(-np.array(self.amcl_history)[:,0]/map.resolution + 1984/2)
+            self.amcl_history_plot.set_ydata(-np.array(self.amcl_history)[:,1]/map.resolution + 1984/2)
 
         self.draw()
 
@@ -112,6 +119,7 @@ class Visualizer:
             0.001*np.sin(particle_filter.particles.orientations),
             color='red', alpha=0.1, angles='xy', pivot='mid'
         )
+        
         self.draw()
 
     def update_particles(self, map : Map, particle_filter : ParticleFilter, x, y, theta):
@@ -131,13 +139,17 @@ class Visualizer:
                 0.001*np.sin([theta]),
                 color='black', alpha=1, angles='xy', pivot='mid'
             )
+            self.mcl_history_plot, = self.map_subplot.plot([], [], alpha=0.5, c = "#0072BD")
         else:
+            self.mcl_history.append([x, y])
             X = np.array([x/map.resolution])
             Y = np.array([y/map.resolution])
             U = 0.001*np.cos([theta]),
             V = 0.001*np.sin([theta]),
             self.particle_set_mean.set_offsets(np.array([X.flatten(), Y.flatten()]).T)
             self.particle_set_mean.set_UVC(U, V)
+            self.mcl_history_plot.set_xdata(np.array(self.mcl_history)[:,0]/map.resolution)
+            self.mcl_history_plot.set_ydata(np.array(self.mcl_history)[:,1]/map.resolution)
 
     def plot_likelihood_field(self, map: Map):
         self.laser_subplot.imshow(map.likelihood_field, cmap='gray')

@@ -1,7 +1,7 @@
 import matplotlib.pyplot as plt
 import numpy as np
 
-output_file = "./output/5th_floor/local/2023_06_17_22_16_26.csv"
+output_file = "/home/murillo/catkin_ws/src/monte-carlo-localization/output/elevator/local/2023_06_18_23_55_38.csv"
 
 arr = np.loadtxt(output_file,
                  delimiter=",", dtype=float)
