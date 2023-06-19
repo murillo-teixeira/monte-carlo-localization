@@ -3,7 +3,7 @@
 import rospy
 from datetime import datetime
 import numpy as np
-np.random.seed(9999)
+np.random.seed(0)
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan
@@ -80,7 +80,6 @@ class MonteCarloLocalizationNode:
         self.likelihood_field_variance = rospy.get_param("sigma_squared", 0)
         self.motion_model_noise = rospy.get_param("motion_model_noise", [0.01, 0.01, 0.1, 0.008])
         
-        # Relative position of the LIDAR
         self.x_sensor = rospy.get_param("x_sensor", 0)
         self.y_sensor = rospy.get_param("y_sensor", 0)
 
@@ -111,9 +110,6 @@ class MonteCarloLocalizationNode:
             self.amcl_pose = rospy.Subscriber('/amcl_pose', PoseWithCovarianceStamped, self.callback_read_amcl_pose)
             self.amcl_particle_cloud = rospy.Subscriber('/particlecloud', PoseArray, self.callback_read_amcl_particle_cloud)
 
-    def initialize_publishers(self):
-        self.pub_mcl_particles = rospy.Publisher('/mcl_particles', PoseArray, queue_size=1)
-
     def callback_read_amcl_particle_cloud(self, msg):
         self.current_amcl_particle_cloud = msg
 
@@ -130,6 +126,7 @@ class MonteCarloLocalizationNode:
         if not self.last_odometry_msg:
             self.last_odometry_msg = self.current_odometry_msg
         elif self.current_laser_msg:
+            # Reading data from the laser and odometry msgs
             self.processing_laser_msg = self.current_laser_msg
             self.processing_odometry_msg = self.current_odometry_msg
             
@@ -195,25 +192,8 @@ class MonteCarloLocalizationNode:
 
             self.last_odometry_msg = self.processing_odometry_msg
 
-
-    # Tentativa de publicar as partículas para o RViz
-    # Funciona, mas precisa de alguma transformação de coordenadas
-    def publish_particles(self):
-        pose_array = PoseArray()
-        pose_array.header.stamp = rospy.Time.now()
-        pose_array.header.frame_id = 'map'
-        for particle in self.particle_filter.particles.T:
-            pose = Pose()
-            pose.position.x, pose.position.y, pose.position.z = particle[0], particle[1], 0.2
-            x, y, z, w = quaternion_from_euler(0, 0, particle[2])
-            pose.orientation.x, pose.orientation.y, pose.orientation.z, pose.orientation.w = x, y, z, w
-            pose_array.poses.append(pose)
-        self.pub_mcl_particles.publish(pose_array)
-
 def main():
     MonteCarloLocalizationNode()
     
-
 if __name__ == '__main__':
     main()
-    

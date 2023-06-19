@@ -2,12 +2,12 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 # output_files = [
-#     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab/global/2023_06_19_13_20_56.csv",
-#     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab/local/2023_06_19_13_17_25.csv",
-#     ]
+#     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab/global/2023_06_19_19_14_44.csv",
+#     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab/local/2023_06_19_19_21_45.csv",
+    # ]
 
 output_files = [
-    "/home/murillo/catkin_ws/src/monte-carlo-localization/output/5th_floor/global/2023_06_18_19_36_47.csv",
+    "/home/murillo/catkin_ws/src/monte-carlo-localization/output/5th_floor/global/2023_06_19_19_30_09.csv",
     "/home/murillo/catkin_ws/src/monte-carlo-localization/output/5th_floor/local/2023_06_18_19_24_15.csv",
     ]
 

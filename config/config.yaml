@@ -3,7 +3,7 @@ node_frequency: 10.0
 
 # Particle filter param
 number_of_particles: 5000
-zhit: 10
+zhit: 20
 zrand: 1
 sigma_squared: 10
 

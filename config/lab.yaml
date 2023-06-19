@@ -1,6 +1,6 @@
 initial_pos_y: 1037
 initial_pos_x: 965
-initial_pos_sd: 100
+initial_pos_sd: 25
 initial_theta: 1.6
 initial_theta_sd: 0.25
 map_roi_xmin: 870
