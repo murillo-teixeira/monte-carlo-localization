@@ -3,7 +3,7 @@
 import rospy
 from datetime import datetime
 import numpy as np
-np.random.seed(0)
+np.random.seed(9999)
 
 from nav_msgs.msg import Odometry
 from sensor_msgs.msg import LaserScan

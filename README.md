@@ -1,8 +1,23 @@
 # Monte Carlo Localization
 
-## Repositório
+Neste repositório se encontra a implementação do algoritmo Monte Carlo Localization para o robô Pioneer 3DX desenvolvida para a disciplina Sistemas Autónomos do Instituto Superior Técnico - Universidade de Lisboa.
 
-O código completo, com todas as bags de teste pode ser encontrado [aqui](https://github.com/mhteixeira/monte-carlo-localization).
+## Resultados
+
+Para avaliar a performance da implementação, foram gravadas ```rosbags``` em 3 diferentes ambientes da Torre Norte do IST e o algoritmo foi executado em modo de pose tracking e global localization e comparado com o pacote amcl, como pode ser visto nas imagens abaixo.
+
+Para mais informações sobre o projeto e resultados, é possível acessar o relatório completo na raiz do repositório.
+
+<table>
+  <tr>
+     <td>Pose tracking</td>
+    <td>Global localization</td>
+  </tr>
+  <tr>
+    <td><img src="images/all_local.png" width=270></td>
+    <td><img src="images/all_global.png" width=270></td>
+  </tr>
+ </table>
 
 ## Considerações sobre o código
 

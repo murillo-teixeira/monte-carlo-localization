@@ -5,11 +5,11 @@
     <arg name="map_location" default="$(find mcl_python)/map" />
     
     <rosparam file="$(find mcl_python)/config/config.yaml" />
-    <rosparam file="$(find mcl_python)/config/5th_floor.yaml" />
+    <rosparam file="$(find mcl_python)/config/lab.yaml" />
     <rosparam file="$(find mcl_python)/config/global.yaml" />
     
-    <arg name="map_name" default="5th_floor" />
-    <arg name="bag_location" default="$(find mcl_python)/bagfiles/5th_floor/5th_floor_1.bag" />
+    <arg name="map_name" default="lab" />
+    <arg name="bag_location" default="$(find mcl_python)/bagfiles/lab/lab_1_amcl_global.bag" />
    
     <!-- Run map server to publish the map -->
     <node pkg="mcl_python" type="mcl_node.py" name="monte_carlo_localization" output="screen">

@@ -1,5 +1,5 @@
 # Node parameters
-node_frequency: 10.0
+node_frequency: 1.0
 
 # Particle filter param
 number_of_particles: 5000
@@ -7,7 +7,7 @@ zhit: 20
 zrand: 1
 sigma_squared: 10
 
-motion_model_noise: [0.01, 0.01, 0.4, 0.008]
+motion_model_noise: [0.01, 0.01, 0.1, 0.008]
 
 # Robot parameters
 x_sensor: 0
@@ -19,7 +19,7 @@ plt_on: 1
 # Modes of plotting: 
 # 0 - Debug (odometry, laser, likelihood field) 
 # 1 - Results (our implementation x amcl) 
-plt_mode: 0
+plt_mode: 1
 
 # Output configurations
 output_on: 0

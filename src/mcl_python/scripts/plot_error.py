@@ -2,12 +2,8 @@ import matplotlib.pyplot as plt
 import numpy as np
 
 output_files = [
-    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/100.csv",
-    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/500.csv",
-    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/1000.csv",
-    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/5000.csv",
-    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/10000.csv",
-    "/home/pberna/catkin_ws/src/monte-carlo-localization/output/elevator/50000.csv",
+    "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab_global.csv",
+    "/home/murillo/catkin_ws/src/monte-carlo-localization/output/lab_local.csv",
     ]
 
 for output_file in output_files:
@@ -35,11 +31,11 @@ for output_file in output_files:
     plt.xlabel("Tempo (s)")
     plt.ylabel("Erro angular (dg)")
 
-plt.suptitle('Convergêcia de resultados com o AMCL')
+plt.suptitle('Erro de localização para bag no mapa do LSDC4')
 
 plt.subplot(211)
-plt.legend(['100 partículas', '500 partículas', '1000 partículas', '5000 partículas', '10000 partículas', '50000 partículas'], loc=1)
+plt.legend(['Global localization', 'Pose tracking'], loc=1)
 plt.subplot(212)
-plt.legend(['100 partículas', '500 partículas', '1000 partículas', '5000 partículas', '10000 partículas', '50000 partículas'], loc=1)
+plt.legend(['Global localization', 'Pose tracking'], loc=1)
 plt.savefig(output_file.replace('.csv', '.png'))
 plt.show()
